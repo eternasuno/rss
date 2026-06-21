@@ -10,3 +10,34 @@ devenv.local.yaml
 .pre-commit-config.yaml
 
 .opencode
+
+# TypeScript / Node
+node_modules/
+
+# Turbo
+.turbo/
+
+# IDE
+.vscode/
+.idea/
+
+# Environment
+.env
+.env.local
+
+# RSS
+*.xml
+
+# Database
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Environment
+.env
+.env.local
+
+# TanStack generated
+.tanstack/
+routeTree.gen.ts

@@ -1,0 +1,32 @@
+{
+  "name": "@rss/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "lint": "biome check .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@rss/shared": "workspace:*",
+    "@tanstack/solid-router": "^1.0.0",
+    "@tanstack/solid-start": "^1.0.0",
+    "better-sqlite3": "^12.11.0",
+    "drizzle-orm": "^0.45.0",
+    "feedsmith": "^2.9.0",
+    "solid-js": "^1.9.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0",
+    "@types/node": "^22.0.0",
+    "drizzle-kit": "^0.31.0",
+    "vite": "^7.0.0",
+    "vite-plugin-solid": "^2.11.0"
+  }
+}
