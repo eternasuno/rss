@@ -1,7 +1,7 @@
-import { generateRssFeed } from 'feedsmith';
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import * as path from 'node:path';
 import type { Feed, Item } from '@rss/shared';
+import { generateRssFeed } from 'feedsmith';
 
 let feedsDir: string | null = null;
 
@@ -22,10 +22,10 @@ export type RssGenParams = {
 
 export const generateFeedXml = ({ feed, items }: RssGenParams): string =>
   generateRssFeed({
-    title: feed.title,
-    link: feed.link,
     description: feed.description,
     language: (feed.data.language as string) || 'en',
+    link: feed.link,
+    title: feed.title,
     ...feed.data,
     items: items.map((item) => ({
       title: item.title,

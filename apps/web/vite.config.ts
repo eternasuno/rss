@@ -1,14 +1,11 @@
-import { defineConfig } from 'vite';
 import { tanstackStart } from '@tanstack/solid-start/plugin/vite';
+import { defineConfig } from 'vite';
 import viteSolid from 'vite-plugin-solid';
 
 export default defineConfig({
+  plugins: [tanstackStart(), viteSolid({ ssr: true })],
   server: {
-    port: 5100,
     host: '0.0.0.0',
+    port: 5100,
   },
-  plugins: [
-    tanstackStart(),
-    viteSolid({ ssr: true }),
-  ],
 });

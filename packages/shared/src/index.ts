@@ -1,1 +1,10 @@
-export type { ApiKey, ApiResponse, CreateFeedInput, CreateItemBody, Feed, Item, LoginInput, User } from './types';
+export type {
+  ApiKey,
+  ApiResponse,
+  CreateFeedInput,
+  CreateItemBody,
+  Feed,
+  Item,
+  LoginInput,
+  User,
+} from './types';

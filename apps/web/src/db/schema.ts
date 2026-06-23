@@ -1,41 +1,41 @@
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const users = sqliteTable('users', {
-  id: text('id').primaryKey(),
-  email: text('email').unique().notNull(),
-  passwordHash: text('password_hash').notNull(),
   createdAt: text('created_at').notNull(),
+  email: text('email').unique().notNull(),
+  id: text('id').primaryKey(),
+  passwordHash: text('password_hash').notNull(),
 });
 
 export const apiKeys = sqliteTable('api_keys', {
+  createdAt: text('created_at').notNull(),
+  expiresAt: text('expires_at'),
   id: text('id').primaryKey(),
+  key: text('key').unique().notNull(),
   userId: text('user_id')
     .notNull()
     .references(() => users.id),
-  key: text('key').unique().notNull(),
-  expiresAt: text('expires_at'),
-  createdAt: text('created_at').notNull(),
 });
 
 export const feeds = sqliteTable('feeds', {
+  createdAt: text('created_at').notNull(),
+  data: text('data', { mode: 'json' }).$type<Record<string, unknown>>().default({}),
+  description: text('description').notNull(),
   id: text('id').primaryKey(),
+  link: text('link').notNull(),
+  title: text('title').notNull(),
+  updatedAt: text('updated_at').notNull(),
   userId: text('user_id')
     .notNull()
     .references(() => users.id),
-  title: text('title').notNull(),
-  description: text('description').notNull(),
-  link: text('link').notNull(),
-  data: text('data', { mode: 'json' }).$type<Record<string, unknown>>().default({}),
-  createdAt: text('created_at').notNull(),
-  updatedAt: text('updated_at').notNull(),
 });
 
 export const items = sqliteTable('items', {
-  id: text('id').primaryKey(),
+  createdAt: text('created_at').notNull(),
+  data: text('data', { mode: 'json' }).$type<Record<string, unknown>>().default({}),
   feedId: text('feed_id')
     .notNull()
     .references(() => feeds.id),
+  id: text('id').primaryKey(),
   title: text('title').notNull(),
-  data: text('data', { mode: 'json' }).$type<Record<string, unknown>>().default({}),
-  createdAt: text('created_at').notNull(),
 });

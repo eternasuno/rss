@@ -1,13 +1,13 @@
 {
-  "$schema": "https://turbo.build/schema.json",
+  "$schema": "./node_modules/turbo/schema.json",
   "tasks": {
-    "dev": {
-      "cache": false,
-      "persistent": true
-    },
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", "build/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
     },
     "lint": {
       "dependsOn": ["^build"]

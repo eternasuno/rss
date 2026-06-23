@@ -5,12 +5,12 @@ export const Route = createFileRoute('/_authed')({
   beforeLoad: async ({ location }) => {
     const user = await getCurrentUser();
     if (!user) {
-      throw redirect({ to: '/login', search: { redirect: location.href } });
+      throw redirect({ search: { redirect: location.href }, to: '/login' });
     }
     return { user };
   },
   component: () => (
-    <main style={{ 'max-width': '960px', margin: '0 auto', padding: '24px' }}>
+    <main style={{ margin: '0 auto', 'max-width': '960px', padding: '24px' }}>
       <Outlet />
     </main>
   ),

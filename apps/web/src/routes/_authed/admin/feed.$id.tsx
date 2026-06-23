@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/solid-router';
-import { For, Show, createResource, createSignal } from 'solid-js';
+import { createResource, createSignal, For, Show } from 'solid-js';
 import { getFeedDetailFn, regenerateXmlFn } from '../../server/feeds';
 
 export const Route = createFileRoute('/_authed/admin/feed/$id')({
@@ -10,7 +10,7 @@ const FeedDetailPage = () => {
   const params = Route.useParams();
   const [feedData, { refetch }] = createResource(
     () => params().id,
-    (id) => getFeedDetailFn({ data: { id } }),
+    (id) => getFeedDetailFn({ data: { id } })
   );
   const [copied, setCopied] = createSignal(false);
   const [regenerating, setRegenerating] = createSignal(false);
@@ -41,15 +41,13 @@ const FeedDetailPage = () => {
             <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>
               {data().feed.title}
             </h1>
-            <p style={{ color: '#6b7280', marginBottom: '32px' }}>
-              {data().feed.description}
-            </p>
+            <p style={{ color: '#6b7280', marginBottom: '32px' }}>{data().feed.description}</p>
 
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
                 gap: '16px',
+                gridTemplateColumns: '1fr 1fr',
                 marginBottom: '32px',
               }}
             >
@@ -68,23 +66,24 @@ const FeedDetailPage = () => {
 
             <div
               style={{
+                'align-items': 'center',
                 display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '16px',
+                'justify-content': 'space-between',
+                'margin-bottom': '16px',
               }}
             >
-              <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>Items</h2>
+              <h2 style={{ 'font-size': '18px', 'font-weight': '600', margin: 0 }}>Items</h2>
               <button
+                type="button"
                 onClick={handleRegenerate}
                 disabled={regenerating()}
                 style={{
-                  padding: '6px 16px',
                   background: '#f3f4f6',
                   border: '1px solid #d1d5db',
                   borderRadius: '6px',
-                  fontSize: '13px',
                   cursor: regenerating() ? 'not-allowed' : 'pointer',
+                  fontSize: '13px',
+                  padding: '6px 16px',
                 }}
               >
                 {regenerating() ? 'Regenerating...' : 'Regenerate XML'}
@@ -94,9 +93,9 @@ const FeedDetailPage = () => {
             <Show when={data().items.length === 0}>
               <div
                 style={{
-                  textAlign: 'center',
-                  padding: '48px 0',
                   color: '#9ca3af',
+                  padding: '48px 0',
+                  textAlign: 'center',
                 }}
               >
                 <p style={{ fontSize: '16px', marginBottom: '8px' }}>No items yet</p>
@@ -105,8 +104,8 @@ const FeedDetailPage = () => {
                   <code
                     style={{
                       background: '#f3f4f6',
-                      padding: '2px 6px',
                       borderRadius: '4px',
+                      padding: '2px 6px',
                     }}
                   >
                     POST /api/{data().feed.id}/items
@@ -127,14 +126,12 @@ const FeedDetailPage = () => {
                   >
                     <div
                       style={{
+                        alignItems: 'center',
                         display: 'flex',
                         justifyContent: 'space-between',
-                        alignItems: 'center',
                       }}
                     >
-                      <span style={{ fontWeight: '500', fontSize: '14px' }}>
-                        {item.title}
-                      </span>
+                      <span style={{ fontSize: '14px', fontWeight: '500' }}>{item.title}</span>
                       <span style={{ color: '#9ca3af', fontSize: '12px' }}>
                         {new Date(item.createdAt).toLocaleDateString()}
                       </span>
@@ -165,22 +162,22 @@ const InfoCard = (props: {
       padding: '16px',
     }}
   >
-    <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px', fontWeight: '500' }}>
+    <div style={{ color: '#6b7280', fontSize: '12px', fontWeight: '500', marginBottom: '4px' }}>
       {props.label}
     </div>
     <div
       style={{
-        display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        display: 'flex',
         gap: '8px',
+        justifyContent: 'space-between',
       }}
     >
       <code
         style={{
+          flex: 1,
           fontSize: '13px',
           wordBreak: 'break-all',
-          flex: 1,
         }}
       >
         {props.value}
@@ -189,12 +186,12 @@ const InfoCard = (props: {
         <button
           onClick={props.onCopy}
           style={{
-            padding: '4px 12px',
             background: props.copied ? '#f0fdf4' : '#fff',
             border: '1px solid #d1d5db',
             borderRadius: '4px',
             cursor: 'pointer',
             fontSize: '12px',
+            padding: '4px 12px',
             whiteSpace: 'nowrap',
           }}
         >
@@ -207,12 +204,12 @@ const InfoCard = (props: {
             navigator.clipboard.writeText(props.copyText || props.value);
           }}
           style={{
-            padding: '4px 12px',
             background: '#fff',
             border: '1px solid #d1d5db',
             borderRadius: '4px',
             cursor: 'pointer',
             fontSize: '12px',
+            padding: '4px 12px',
             whiteSpace: 'nowrap',
           }}
         >

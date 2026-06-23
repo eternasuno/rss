@@ -9,8 +9,6 @@ devenv.local.yaml
 # pre-commit
 .pre-commit-config.yaml
 
-.opencode
-
 # TypeScript / Node
 node_modules/
 
@@ -41,3 +39,9 @@ node_modules/
 # TanStack generated
 .tanstack/
 routeTree.gen.ts
+
+# MacOS
+.DS_Store
+
+# pnpm store
+.pnpm-store/

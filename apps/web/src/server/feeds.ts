@@ -23,32 +23,36 @@ export const createFeedFn = createServerFn({ method: 'POST' })
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
 
-    db.insert(feeds).values({
-      id,
-      userId,
-      title: input.title,
-      description: input.description,
-      link: input.link,
-      data: input.data ?? {},
-      createdAt: now,
-      updatedAt: now,
-    }).run();
+    db.insert(feeds)
+      .values({
+        createdAt: now,
+        data: input.data ?? {},
+        description: input.description,
+        id,
+        link: input.link,
+        title: input.title,
+        updatedAt: now,
+        userId,
+      })
+      .run();
 
     let keyRecord = db.select().from(apiKeys).where(eq(apiKeys.userId, userId)).get();
 
     if (!keyRecord) {
       const keyId = crypto.randomUUID();
       const keyValue = generateToken();
-      db.insert(apiKeys).values({
-        id: keyId,
-        userId,
-        key: keyValue,
-        createdAt: now,
-      }).run();
-      keyRecord = { id: keyId, userId, key: keyValue, expiresAt: null, createdAt: now };
+      db.insert(apiKeys)
+        .values({
+          createdAt: now,
+          id: keyId,
+          key: keyValue,
+          userId,
+        })
+        .run();
+      keyRecord = { createdAt: now, expiresAt: null, id: keyId, key: keyValue, userId };
     }
 
-    return { success: true, data: { feed: { id, ...input }, apiKey: keyRecord.key } };
+    return { data: { apiKey: keyRecord.key, feed: { id, ...input } }, success: true };
   });
 
 export const listFeedsFn = createServerFn({ method: 'GET' }).handler(async () => {
@@ -77,7 +81,7 @@ export const getFeedDetailFn = createServerFn({ method: 'GET' })
       .orderBy(asc(items.createdAt))
       .all();
 
-    return { feed, apiKey: keyRecord?.key, items: feedItems };
+    return { apiKey: keyRecord?.key, feed, items: feedItems };
   });
 
 export const regenerateXmlFn = createServerFn({ method: 'POST' })

@@ -52,17 +52,14 @@ const LoginPage = () => {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '100px auto', padding: '24px' }}>
+    <div style={{ margin: '100px auto', maxWidth: '400px', padding: '24px' }}>
       <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px' }}>
         RSS Feed Manager
       </h1>
 
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '16px' }}>
-          <label
-            style={{ display: 'block', marginBottom: '4px', fontWeight: '500' }}
-            for="email"
-          >
+          <label style={{ display: 'block', fontWeight: '500', marginBottom: '4px' }} for="email">
             Email
           </label>
           <input
@@ -71,12 +68,12 @@ const LoginPage = () => {
             value={email()}
             onInput={(e) => setEmail(e.currentTarget.value)}
             style={{
-              width: '100%',
-              padding: '8px 12px',
               border: '1px solid #d1d5db',
               borderRadius: '6px',
-              fontSize: '16px',
               boxSizing: 'border-box',
+              fontSize: '16px',
+              padding: '8px 12px',
+              width: '100%',
             }}
             required
           />
@@ -84,7 +81,7 @@ const LoginPage = () => {
 
         <div style={{ marginBottom: '24px' }}>
           <label
-            style={{ display: 'block', marginBottom: '4px', fontWeight: '500' }}
+            style={{ display: 'block', fontWeight: '500', marginBottom: '4px' }}
             for="password"
           >
             Password
@@ -95,12 +92,12 @@ const LoginPage = () => {
             value={password()}
             onInput={(e) => setPassword(e.currentTarget.value)}
             style={{
-              width: '100%',
-              padding: '8px 12px',
               border: '1px solid #d1d5db',
               borderRadius: '6px',
-              fontSize: '16px',
               boxSizing: 'border-box',
+              fontSize: '16px',
+              padding: '8px 12px',
+              width: '100%',
             }}
             required
           />
@@ -109,12 +106,12 @@ const LoginPage = () => {
         {error() && (
           <div
             style={{
-              color: '#dc2626',
               background: '#fef2f2',
-              padding: '8px 12px',
               borderRadius: '6px',
-              marginBottom: '16px',
+              color: '#dc2626',
               fontSize: '14px',
+              marginBottom: '16px',
+              padding: '8px 12px',
             }}
           >
             {error()}
@@ -126,16 +123,16 @@ const LoginPage = () => {
             type="submit"
             disabled={loading()}
             style={{
-              flex: 1,
-              padding: '10px 16px',
               background: '#2563eb',
-              color: 'white',
               border: 'none',
               borderRadius: '6px',
+              color: 'white',
+              cursor: loading() ? 'not-allowed' : 'pointer',
+              flex: 1,
               fontSize: '16px',
               fontWeight: '500',
-              cursor: loading() ? 'not-allowed' : 'pointer',
               opacity: loading() ? 0.7 : 1,
+              padding: '10px 16px',
             }}
           >
             Sign In
@@ -145,15 +142,15 @@ const LoginPage = () => {
             disabled={loading()}
             onClick={handleRegister}
             style={{
-              flex: 1,
-              padding: '10px 16px',
               background: '#f3f4f6',
-              color: '#374151',
               border: '1px solid #d1d5db',
               borderRadius: '6px',
+              color: '#374151',
+              cursor: loading() ? 'not-allowed' : 'pointer',
+              flex: 1,
               fontSize: '16px',
               fontWeight: '500',
-              cursor: loading() ? 'not-allowed' : 'pointer',
+              padding: '10px 16px',
             }}
           >
             Register

@@ -2,9 +2,7 @@ import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 
 export const hashPassword = ({ password }: { password: string }): string => {
   const salt = randomBytes(16).toString('hex');
-  const hash = createHash('sha256')
-    .update(`${salt}:${password}`)
-    .digest('hex');
+  const hash = createHash('sha256').update(`${salt}:${password}`).digest('hex');
   return `${salt}:${hash}`;
 };
 
@@ -17,9 +15,7 @@ export const verifyPassword = ({
 }): boolean => {
   const [salt, storedHash] = hash.split(':');
   if (!salt || !storedHash) return false;
-  const computed = createHash('sha256')
-    .update(`${salt}:${password}`)
-    .digest('hex');
+  const computed = createHash('sha256').update(`${salt}:${password}`).digest('hex');
   return timingSafeEqual(Buffer.from(computed), Buffer.from(storedHash));
 };
 

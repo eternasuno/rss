@@ -15,14 +15,14 @@ export const loginFn = createServerFn({ method: 'POST' })
   .handler(async ({ data: { email, password } }) => {
     try {
       const user = db.select().from(users).where(eq(users.email, email)).get();
-      if (!user || !verifyPassword({ password, hash: user.passwordHash })) {
-        return { success: false, error: 'Invalid email or password' };
+      if (!user || !verifyPassword({ hash: user.passwordHash, password })) {
+        return { error: 'Invalid email or password', success: false };
       }
       const session = await getSession();
-      await session.update({ userId: user.id, email: user.email });
-      return { success: true, data: { email: user.email } };
+      await session.update({ email: user.email, userId: user.id });
+      return { data: { email: user.email }, success: true };
     } catch (err) {
-      return { success: false, error: 'Server error' };
+      return { error: 'Server error', success: false };
     }
   });
 
@@ -52,28 +52,32 @@ export const registerFn = createServerFn({ method: 'POST' })
     try {
       const existing = db.select().from(users).where(eq(users.email, email)).get();
       if (existing) {
-        return { success: false, error: 'Email already registered' };
+        return { error: 'Email already registered', success: false };
       }
       const id = crypto.randomUUID();
       const now = new Date().toISOString();
-      db.insert(users).values({
-        id,
-        email,
-        passwordHash: hashPassword({ password }),
-        createdAt: now,
-      }).run();
+      db.insert(users)
+        .values({
+          createdAt: now,
+          email,
+          id,
+          passwordHash: hashPassword({ password }),
+        })
+        .run();
       const apiKeyId = crypto.randomUUID();
       const apiKeyValue = generateToken();
-      db.insert(apiKeys).values({
-        id: apiKeyId,
-        userId: id,
-        key: apiKeyValue,
-        createdAt: now,
-      }).run();
+      db.insert(apiKeys)
+        .values({
+          createdAt: now,
+          id: apiKeyId,
+          key: apiKeyValue,
+          userId: id,
+        })
+        .run();
       const session = await getSession();
-      await session.update({ userId: id, email });
-      return { success: true, data: { email, apiKey: apiKeyValue } };
+      await session.update({ email, userId: id });
+      return { data: { apiKey: apiKeyValue, email }, success: true };
     } catch (err) {
-      return { success: false, error: 'Server error' };
+      return { error: 'Server error', success: false };
     }
   });
