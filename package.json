@@ -1,6 +1,7 @@
 {
   "devDependencies": {
     "@biomejs/biome": "latest",
+    "@effect/language-service": "^0.86.2",
     "turbo": "latest",
     "typescript": "latest"
   },
@@ -12,6 +13,7 @@
     "dev": "turbo dev --filter=@rss/web",
     "format": "biome check --write .",
     "lint": "turbo lint",
+    "prepare": "effect-language-service patch",
     "typecheck": "turbo typecheck"
   },
   "type": "module"

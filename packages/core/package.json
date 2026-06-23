@@ -3,14 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./src/entity.ts",
+  "types": "./src/entity.ts",
   "exports": {
-    ".": "./src/index.ts",
+    ".": "./src/entity.ts",
     "./entity/*": "./src/entity/*.ts"
   },
   "dependencies": {
-    "effect": "latest"
+    "effect": "catalog:"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

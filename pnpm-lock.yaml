@@ -4,6 +4,12 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    effect:
+      specifier: 3.21.4
+      version: 3.21.4
+
 importers:
 
   .:
@@ -11,6 +17,9 @@ importers:
       '@biomejs/biome':
         specifier: latest
         version: 2.5.1
+      '@effect/language-service':
+        specifier: ^0.86.2
+        version: 0.86.2
       turbo:
         specifier: latest
         version: 2.9.18
@@ -61,7 +70,7 @@ importers:
   packages/core:
     dependencies:
       effect:
-        specifier: latest
+        specifier: 'catalog:'
         version: 3.21.4
 
   packages/shared: {}
@@ -208,6 +217,10 @@ packages:
 
   '@drizzle-team/brocli@0.10.2':
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
+
+  '@effect/language-service@0.86.2':
+    resolution: {integrity: sha512-SaPln+8srOqDJDUwNTDmP5e+IYpEDr9+1epGznnsLqu8xvo6VnxyWARdeLpqvZJlb0Pgy9ca7ppqvvdWbHPXAg==}
+    hasBin: true
 
   '@esbuild-kit/core-utils@3.3.2':
     resolution: {integrity: sha512-sPRAnw9CdSsRmEtnsl2WXWdyquogVpB3yZ3dgwJfe8zrOzTsV7cJvmwrKVa+0ma5BoiGJ+BoqkMvawbayKUsqQ==}
@@ -2007,6 +2020,8 @@ snapshots:
     optional: true
 
   '@drizzle-team/brocli@0.10.2': {}
+
+  '@effect/language-service@0.86.2': {}
 
   '@esbuild-kit/core-utils@3.3.2':
     dependencies:

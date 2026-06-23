@@ -1,22 +1,129 @@
 # RSS Feed Manager
 
-A self-hosted RSS feed management platform built with TanStack Start, SolidJS, and SQLite.
+A self-hosted RSS feed management platform. Create feeds, add items via API, and serve RSS/Podcast XML feeds.
 
 ## Project Goal
 
-Provide a web UI to create and manage RSS feeds, an API to programmatically add items, and auto-generated RSS XML feeds served as static files.
+Build an automated RSS pipeline:
+1. Provide API to generate RSS/podcast XML consumable by RSS readers and podcast players
+2. Future: auto-extract full text, AI processing on item ingestion
+3. Ultimate goal: end-to-end automated RSS pipeline
 
-## Tech Stack
+## Design Philosophy
 
-| Layer | Technology |
-|-------|-----------|
-| Full-stack framework | TanStack Start + SolidJS |
-| Build tool | Vite 7 |
-| Database | SQLite (Drizzle ORM + better-sqlite3) |
-| RSS generation | feedsmith |
-| Monorepo | pnpm workspace + Turborepo |
-| Lint/Format | Biome |
-| Auth | Session cookies + bcrypt (server functions) |
+### Flexible Schema — RSS Standard Minimum
+
+Do not bake format-specific fields into the database schema. Follow RSS 2.0 minimum requirements:
+- `<channel>` requires: `title`, `link`, `description`
+- `<item>` requires: `title` or `description`
+
+All other fields (RSS optional, iTunes namespace, Podcast 2.0, Media RSS, Atom extensions, etc.) go into an `extraData: Record<string, JSONValue>` JSON column. Users decide what fields to include via the API.
+
+### feedsmith Capabilities
+
+feedsmith v2.9.4 natively supports structured nested objects:
+- **Standard RSS 2.0**: `enclosures[]`, `pubDate`, `guid`, `categories[]`, `source`, etc.
+- **iTunes namespace**: `itunes.author`, `itunes.duration`, `itunes.episode`, `itunes.season`, `itunes.episodeType`, `itunes.image`, `itunes.explicit`, `itunes.categories`, `itunes.owner`, `itunes.type`, `itunes.title`
+- **Podcast 2.0**: `podcast.transcripts[]`, `podcast.chapters`, `podcast.persons[]`, `podcast.funding[]`, `podcast.locked`, `podcast.medium`, `podcast.alternateEnclosures[]`, etc.
+- **Media RSS**: `media.contents[]`, `media.thumbnails[]`
+
+All fields are passed via nested objects in `extraData`, fed through `...feed.extraData` / `...item.extraData` spread into feedsmith's `generateRssFeed` (in lenient mode).
+
+## Clean Architecture (Effect-TS)
+
+### Architecture Layers
+
+```
+gateway/  ──depends on──▶ usecase/  ──depends on──▶ port/  ──depends on──▶ entity/
+    │                         ▲
+    │                         │ implements
+    └──depends on──▶ adapter/ ─┘
+                         │
+                         └──depends on──▶ infrastructure/
+```
+
+Simplified architecture (project is small, single implementations):
+- `core/` = Entity + Port + Usecase (depends only on `effect`)
+- `adapter/` = All Adapter + Infrastructure implementations
+
+### Entity Layer (`packages/core/src/entity/`)
+
+Pure data models using Effect-TS Schema. Zero framework dependencies.
+
+| Entity | Fields | Notes |
+|--------|--------|-------|
+| **User** | id(UUID), email(NonEmptyString) | No createdAt, no passwordHash — auth is a Port concern |
+| **ApiKey** | id(UUID), key(String), userId(UUID), expiresAt?(Date), lastUsedAt?(Date), createdAt(Date) | key stored raw, user can re-copy |
+| **Feed** | id(UUID), userId(UUID), title(NonEmptyString), description(NonEmptyString), link(URL), extraData(Record<string, JSONValue>), createdAt(Date), updatedAt(Date) | link is RSS 2.0 required channel field |
+| **Item** | id(UUID), feedId(UUID), title(NonEmptyString), extraData(Record<string, JSONValue>), createdAt(Date) | title is RSS 2.0 minimum for items |
+
+### Target Architecture (WIP)
+
+```
+packages/core/src/
+├── entity/            # Pure data models (Effect Schema) — DONE
+│   ├── json.ts        # JSONValue type + ExtraData schema
+│   ├── user.ts
+│   ├── api-key.ts
+│   ├── feed.ts
+│   └── item.ts
+├── port/              # Interface contracts (Effect Tags) — TODO
+│   ├── feed-repository.ts
+│   ├── item-repository.ts
+│   ├── user-repository.ts
+│   ├── auth-service.ts
+│   └── feed-generator.ts
+└── usecase/           # Business logic (Effect pipelines) — TODO
+    ├── create-feed.ts
+    ├── add-item.ts
+    ├── get-feed.ts
+    ├── get-feed-detail.ts
+    ├── login.ts
+    ├── register.ts
+    └── regenerate-xml.ts
+```
+
+### Adapter Layer (`packages/infra-*` or `apps/web/src/adapter/`) — TODO
+
+| Adapter | Implements | Technology |
+|---------|-----------|------------|
+| SqliteFeedRepository | FeedRepository | Drizzle + better-sqlite3 |
+| SqliteItemRepository | ItemRepository | Drizzle + better-sqlite3 |
+| SqliteUserRepository | UserRepository | Drizzle + better-sqlite3 |
+| SessionAuthService | AuthService | TanStack Start session + SHA256 |
+| FeedsmithGenerator | FeedGenerator | feedsmith (lenient mode) |
+
+### Gateway Layer (`apps/web/src/gateway/`) — TODO
+
+TanStack Start routes and server functions that only do HTTP orchestration:
+- Call usecases (no business logic)
+- Wire adapters via Effect's Runtime
+- Format HTTP responses
+
+## Future Pipeline
+
+```
+Source URL → Cron poller → Content extractor → AI processor → structured item → write XML
+```
+
+- **Source table**: URL sources to poll periodically
+- **Background worker**: Cron job to fetch new content
+- **Content extraction**: Readability/article extraction
+- **AI processing**: Summarization, tagging, categorization
+- **Media processing**: Podcast audio download/transcode
+
+## Ports
+
+| Service | Port |
+|---------|------|
+| Web app (dev) | 5100 |
+
+## Environment Variables
+
+```
+DATABASE_URL=./data/rss.db
+SESSION_SECRET=change-me-to-a-32-char-random-string
+```
 
 ## Commands
 
@@ -26,51 +133,20 @@ Provide a web UI to create and manage RSS feeds, an API to programmatically add 
 | `pnpm lint` | root | Lint all packages |
 | `pnpm typecheck` | root | Type-check all packages |
 | `pnpm format` | root | Format with Biome |
+| `pnpm run typecheck` | packages/core | Type-check core package |
 | `pnpm run db:generate` | apps/web | Generate Drizzle migrations |
 | `pnpm run db:migrate` | apps/web | Apply migrations |
-| `pnpm run db:push` | apps/web | Push schema (dev) |
-| `pnpm run db:studio` | apps/web | Drizzle Studio |
 
-## Architecture
+## Tech Stack
 
-```
-apps/web/src/
-├── routes/           Page & server routes (file-based routing via TanStack Router)
-│   ├── __root.tsx    Root layout (HTML document shell)
-│   ├── index.tsx     Home → redirect to /admin
-│   ├── login.tsx     Login page (email + password)
-│   ├── _authed.tsx   Auth guard (beforeLoad → redirect if no session)
-│   ├── _authed/admin/ Admin pages (create/list feeds)
-│   ├── feed.$id.ts   Server route: GET /feed/:id → RSS XML
-│   └── api.$feedId.items.ts  Server route: POST /api/:feedId/items
-├── server/           Server functions (createServerFn)
-│   ├── auth.ts       login/logout/register/getCurrentUser
-│   └── feeds.ts      createFeed/listFeeds/getFeedDetail
-├── db/               Database layer
-│   ├── schema.ts     Drizzle schema (users, apiKeys, feeds, items)
-│   └── index.ts      DB connection + migrator
-├── lib/              Pure utilities
-│   ├── auth.ts       Password hashing, token generation
-│   └── feed-gen.ts   RSS XML generation + file I/O
-├── utils/
-│   └── session.ts    TanStack Start session helper
-└── router.tsx        Router configuration
-```
-
-## API Routes
-
-- `POST /api/:feedId/items` — Add item (requires `X-API-Key` header)
-- `GET /feed/:id` — RSS XML feed
-
-## Page Routes
-
-- `/login` — Login/Register page
-- `/admin` — Feed management (authenticated)
-- `/admin/feed/:id` — Feed detail with items
-
-## Environment Variables
-
-```
-DATABASE_URL=./data/rss.db
-SESSION_SECRET=change-me-to-a-32-char-random-string
-```
+| Layer | Technology |
+|-------|-----------|
+| Architecture | Clean Architecture + Effect-TS |
+| Schema & Validation | Effect Schema (`@effect/schema`) |
+| Full-stack framework | TanStack Start + SolidJS |
+| Build tool | Vite 7 |
+| Database | SQLite (Drizzle ORM + better-sqlite3) |
+| RSS generation | feedsmith |
+| Monorepo | pnpm workspace + Turborepo |
+| Lint/Format | Biome |
+| Auth | Session cookies + SHA256 (server functions) |
