@@ -5,24 +5,23 @@ export type JSONValue =
   | number
   | boolean
   | null
-  | JSONValue[]
+  | ReadonlyArray<JSONValue>
   | { readonly [key: string]: JSONValue }
 
-const isJSONValue = (u: unknown): u is JSONValue => {
-  if (u === null) return true
-  if (typeof u === "string") return true
-  if (typeof u === "number") return true
-  if (typeof u === "boolean") return true
-  if (Array.isArray(u)) return u.every(isJSONValue)
-  if (typeof u === "object") return Object.values(u as Record<string, unknown>).every(isJSONValue)
-  return false
-}
-
-const jsonValueSchema = Schema.declare(isJSONValue)
-
-export type ExtraData = Record<string, JSONValue>
+export const JSONValue: Schema.Schema<JSONValue> = Schema.Union(
+  Schema.String,
+  Schema.Number,
+  Schema.Boolean,
+  Schema.Null,
+  Schema.Array(Schema.suspend((): Schema.Schema<JSONValue> => JSONValue)),
+  Schema.Record({
+    key: Schema.String,
+    value: Schema.suspend((): Schema.Schema<JSONValue> => JSONValue),
+  })
+)
 
 export const ExtraData = Schema.Record({
   key: Schema.String,
-  value: jsonValueSchema,
-}) as Schema.Schema<ExtraData>
+  value: JSONValue,
+})
+export type ExtraData = Schema.Schema.Type<typeof ExtraData>
