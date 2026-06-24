@@ -52,36 +52,27 @@ Pure data models using Effect-TS Schema. Zero framework dependencies.
 
 | Entity | Fields | Notes |
 |--------|--------|-------|
-| **User** | id(UserId), email(NonEmptyTrimmedString) | Branded UserId. Emails are trimmed at schema level. No createdAt, no passwordHash — auth is a Port concern |
-| **ApiKey** | id(ApiKeyId), key(NonEmptyTrimmedString), userId(UserId), expiresAt(Date), lastUsedAt(Date), createdAt(Date) | Branded ApiKeyId. key stored raw, user can re-copy |
-| **Feed** | id(FeedId), userId(UserId), title(NonEmptyTrimmedString), description(NonEmptyTrimmedString), link(Schema.URL), extraData(ExtraData), createdAt(Date), updatedAt(Date) | Branded FeedId. link is RSS 2.0 required channel field |
-| **Item** | id(ItemId), feedId(FeedId), title(NonEmptyTrimmedString), extraData(ExtraData), createdAt(Date) | Branded ItemId. title is RSS 2.0 minimum for items |
+| **Feed** | id(FeedId), userId(UserId), title(NonEmptyTrimmedString), description(NonEmptyTrimmedString), link(Schema.URL), extraData(ExtraData), createdAt(DateTime.Utc), updatedAt(DateTime.Utc) | Branded FeedId. link is RSS 2.0 required channel field |
+| **Item** | id(ItemId), feedId(FeedId), title(NonEmptyTrimmedString), extraData(ExtraData), createdAt(DateTime.Utc) | Branded ItemId. title is RSS 2.0 minimum for items |
 
 ### Target Architecture (WIP)
 
 ```
 packages/core/src/
 ├── entity/            # Pure data models (Effect Schema) — DONE
-│   ├── json.ts        # JSONValue type + ExtraData schema
-│   ├── user.ts
-│   ├── api-key.ts
+│   ├── value-object.ts  # JSONValue, ExtraData, UserId brand
 │   ├── feed.ts
 │   └── item.ts
 ├── port/              # Interface contracts (Effect Tags) — DONE
 │   ├── app-error.ts       # Unified AppError (Data.TaggedError with ErrorCode literal)
-│   ├── user-repository.ts
-│   ├── api-key-repository.ts
+│   ├── feed-generator.ts  # RSS XML generation via feedsmith
 │   ├── feed-repository.ts
-│   ├── item-repository.ts
-│   ├── hash-service.ts    # Password hashing (SHA-256), single hash method
-│   └── feed-generator.ts  # RSS XML generation via feedsmith
+│   └── item-repository.ts
 └── usecase/           # Business logic (Effect pipelines) — TODO
-    ├── create-feed.ts
     ├── add-item.ts
+    ├── create-feed.ts
     ├── get-feed.ts
     ├── get-feed-detail.ts
-    ├── login.ts
-    ├── register.ts
     └── regenerate-xml.ts
 ```
 
@@ -91,9 +82,6 @@ packages/core/src/
 |---------|-----------|------------|
 | SqliteFeedRepository | FeedRepository | Drizzle + better-sqlite3 |
 | SqliteItemRepository | ItemRepository | Drizzle + better-sqlite3 |
-| SqliteUserRepository | UserRepository | Drizzle + better-sqlite3 |
-| SqliteApiKeyRepository | ApiKeyRepository | Drizzle + better-sqlite3 |
-| NodeCryptoHashService | HashService | Node.js crypto (SHA-256) |
 | FeedsmithGenerator | FeedGenerator | feedsmith (lenient mode) |
 
 ### Gateway Layer (`apps/web/src/gateway/`) — TODO
@@ -152,4 +140,4 @@ SESSION_SECRET=change-me-to-a-32-char-random-string
 | RSS generation | feedsmith |
 | Monorepo | pnpm workspace + Turborepo |
 | Lint/Format | Biome |
-| Auth | Session cookies + SHA256 (server functions) |
+| Auth | better-auth (TanStack Start) |

@@ -27,9 +27,9 @@ export const addItem = (input: AddItemInput) =>
     }
 
     const itemId = yield* newItemId();
-    const nowUtc = yield* DateTime.now;
+    const createdAt = yield* DateTime.now;
     const item: Item = {
-      createdAt: new Date(nowUtc.epochMillis),
+      createdAt,
       extraData: input.extraData,
       feedId: input.feedId,
       id: itemId,

@@ -19,8 +19,7 @@ export const createFeed = (input: CreateFeedInput) =>
   Effect.gen(function* () {
     const feedRepo = yield* FeedRepository;
     const feedId = yield* newFeedId();
-    const nowUtc = yield* DateTime.now;
-    const now = new Date(nowUtc.epochMillis);
+    const now = yield* DateTime.now;
     const feed: Feed = {
       createdAt: now,
       description: input.description,

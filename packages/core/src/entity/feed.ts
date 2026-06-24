@@ -5,13 +5,13 @@ export const FeedId = Schema.String.pipe(Schema.brand('FeedId'));
 export type FeedId = typeof FeedId.Type;
 
 export const Feed = Schema.Struct({
-  createdAt: Schema.Date,
+  createdAt: Schema.DateTimeUtcFromSelf,
   description: Schema.NonEmptyTrimmedString,
   extraData: ExtraData,
   id: FeedId,
   link: Schema.URL,
   title: Schema.NonEmptyTrimmedString,
-  updatedAt: Schema.Date,
+  updatedAt: Schema.DateTimeUtcFromSelf,
   userId: UserId,
 });
 
