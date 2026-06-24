@@ -46,7 +46,38 @@
     },
     "enabled": true,
     "rules": {
-      "preset": "recommended"
+      "preset": "recommended",
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": {
+            "maxAllowedComplexity": 8
+          }
+        },
+        "noExcessiveLinesPerFunction": {
+          "level": "error",
+          "options": {
+            "maxLines": 20
+          }
+        },
+        "useMaxParams": {
+          "level": "error",
+          "options": {
+            "max": 1
+          }
+        }
+      },
+      "style": {
+        "noExcessiveLinesPerFile": {
+          "level": "warn",
+          "options": {
+            "maxLines": 150
+          }
+        }
+      },
+      "suspicious": {
+        "noVar": "error"
+      }
     }
   },
   "vcs": {

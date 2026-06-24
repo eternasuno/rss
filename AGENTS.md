@@ -52,10 +52,10 @@ Pure data models using Effect-TS Schema. Zero framework dependencies.
 
 | Entity | Fields | Notes |
 |--------|--------|-------|
-| **User** | id(UUID), email(NonEmptyString) | No createdAt, no passwordHash — auth is a Port concern |
-| **ApiKey** | id(UUID), key(String), userId(UUID), expiresAt?(Date), lastUsedAt?(Date), createdAt(Date) | key stored raw, user can re-copy |
-| **Feed** | id(UUID), userId(UUID), title(NonEmptyString), description(NonEmptyString), link(URL), extraData(Record<string, JSONValue>), createdAt(Date), updatedAt(Date) | link is RSS 2.0 required channel field |
-| **Item** | id(UUID), feedId(UUID), title(NonEmptyString), extraData(Record<string, JSONValue>), createdAt(Date) | title is RSS 2.0 minimum for items |
+| **User** | id(UserId), email(NonEmptyTrimmedString) | Branded UserId. Emails are trimmed at schema level. No createdAt, no passwordHash — auth is a Port concern |
+| **ApiKey** | id(ApiKeyId), key(NonEmptyTrimmedString), userId(UserId), expiresAt(Date), lastUsedAt(Date), createdAt(Date) | Branded ApiKeyId. key stored raw, user can re-copy |
+| **Feed** | id(FeedId), userId(UserId), title(NonEmptyTrimmedString), description(NonEmptyTrimmedString), link(Schema.URL), extraData(ExtraData), createdAt(Date), updatedAt(Date) | Branded FeedId. link is RSS 2.0 required channel field |
+| **Item** | id(ItemId), feedId(FeedId), title(NonEmptyTrimmedString), extraData(ExtraData), createdAt(Date) | Branded ItemId. title is RSS 2.0 minimum for items |
 
 ### Target Architecture (WIP)
 
@@ -67,12 +67,14 @@ packages/core/src/
 │   ├── api-key.ts
 │   ├── feed.ts
 │   └── item.ts
-├── port/              # Interface contracts (Effect Tags) — TODO
+├── port/              # Interface contracts (Effect Tags) — DONE
+│   ├── app-error.ts       # Unified AppError (Data.TaggedError with ErrorCode literal)
+│   ├── user-repository.ts
+│   ├── api-key-repository.ts
 │   ├── feed-repository.ts
 │   ├── item-repository.ts
-│   ├── user-repository.ts
-│   ├── auth-service.ts
-│   └── feed-generator.ts
+│   ├── hash-service.ts    # Password hashing (SHA-256), single hash method
+│   └── feed-generator.ts  # RSS XML generation via feedsmith
 └── usecase/           # Business logic (Effect pipelines) — TODO
     ├── create-feed.ts
     ├── add-item.ts
@@ -90,7 +92,8 @@ packages/core/src/
 | SqliteFeedRepository | FeedRepository | Drizzle + better-sqlite3 |
 | SqliteItemRepository | ItemRepository | Drizzle + better-sqlite3 |
 | SqliteUserRepository | UserRepository | Drizzle + better-sqlite3 |
-| SessionAuthService | AuthService | TanStack Start session + SHA256 |
+| SqliteApiKeyRepository | ApiKeyRepository | Drizzle + better-sqlite3 |
+| NodeCryptoHashService | HashService | Node.js crypto (SHA-256) |
 | FeedsmithGenerator | FeedGenerator | feedsmith (lenient mode) |
 
 ### Gateway Layer (`apps/web/src/gateway/`) — TODO
@@ -137,12 +140,25 @@ SESSION_SECRET=change-me-to-a-32-char-random-string
 | `pnpm run db:generate` | apps/web | Generate Drizzle migrations |
 | `pnpm run db:migrate` | apps/web | Apply migrations |
 
+## Code Conventions (Biome Lint)
+
+Enforced via `biome.json` `linter.rules`:
+
+| Rule | Constraint | Severity |
+|------|-----------|----------|
+| `noExcessiveLinesPerFile` | ≤ 150 lines per file | warn |
+| `noExcessiveLinesPerFunction` | ≤ 20 lines per function body | error |
+| `noExcessiveCognitiveComplexity` | ≤ 8 cognitive complexity per function | error |
+| `useMaxParams` | ≤ 1 parameter per function | error |
+| `useConst` | prefer `const` over `let` when no reassignment | error (via recommended preset) |
+| `noVar` | forbid `var` entirely | error |
+
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
 | Architecture | Clean Architecture + Effect-TS |
-| Schema & Validation | Effect Schema (`@effect/schema`) |
+| Schema & Validation | Effect Schema (imported from `effect`) |
 | Full-stack framework | TanStack Start + SolidJS |
 | Build tool | Vite 7 |
 | Database | SQLite (Drizzle ORM + better-sqlite3) |
