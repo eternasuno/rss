@@ -1,4 +1,4 @@
-import { Schema } from "effect"
+import { Schema } from 'effect';
 
 export type JSONValue =
   | string
@@ -6,7 +6,7 @@ export type JSONValue =
   | boolean
   | null
   | ReadonlyArray<JSONValue>
-  | { readonly [key: string]: JSONValue }
+  | { readonly [key: string]: JSONValue };
 
 export const JSONValue: Schema.Schema<JSONValue> = Schema.Union(
   Schema.String,
@@ -18,10 +18,11 @@ export const JSONValue: Schema.Schema<JSONValue> = Schema.Union(
     key: Schema.String,
     value: Schema.suspend((): Schema.Schema<JSONValue> => JSONValue),
   })
-)
+);
 
 export const ExtraData = Schema.Record({
   key: Schema.String,
   value: JSONValue,
-})
-export type ExtraData = Schema.Schema.Type<typeof ExtraData>
+});
+
+export type ExtraData = typeof ExtraData.Type;

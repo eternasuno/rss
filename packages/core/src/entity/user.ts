@@ -1,10 +1,14 @@
-import { Schema } from "effect"
+import { Schema } from 'effect';
+import { Email } from './value-object.js';
 
-export const UserId = Schema.String.pipe(Schema.brand("UserId"))
-export type UserId = Schema.Schema.Type<typeof UserId>
+export const UserId = Schema.String.pipe(Schema.brand('UserId'));
+
+export type UserId = typeof UserId.Type;
 
 export const User = Schema.Struct({
+  email: Email,
   id: UserId,
-  email: Schema.NonEmptyTrimmedString,
-})
-export type User = Schema.Schema.Type<typeof User>
+  passwordHash: Schema.String,
+});
+
+export type User = typeof User.Type;

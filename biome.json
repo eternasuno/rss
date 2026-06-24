@@ -46,7 +46,6 @@
     },
     "enabled": true,
     "rules": {
-      "preset": "recommended",
       "complexity": {
         "noExcessiveCognitiveComplexity": {
           "level": "error",
@@ -67,6 +66,7 @@
           }
         }
       },
+      "preset": "recommended",
       "style": {
         "noExcessiveLinesPerFile": {
           "level": "warn",
