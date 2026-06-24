@@ -1,7 +1,7 @@
 import { DateTime, Effect, Option, Schema } from 'effect';
 import { FeedId } from '../entity/feed.js';
 import { type Item, ItemId } from '../entity/item.js';
-import { ExtraData } from '../entity/json.js';
+import { ExtraData } from '../entity/value-object.js';
 import { AppError } from '../port/app-error.js';
 import { FeedRepository } from '../port/feed-repository.js';
 import { ItemRepository } from '../port/item-repository.js';

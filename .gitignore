@@ -47,6 +47,3 @@ routeTree.gen.ts
 .pnpm-store/
 
 dist
-
-# Compiled binaries
-core

@@ -1,7 +1,6 @@
 import { DateTime, Effect, Schema } from 'effect';
 import { type Feed, FeedId } from '../entity/feed.js';
-import { ExtraData } from '../entity/json.js';
-import { UserId } from '../entity/user.js';
+import { ExtraData, UserId } from '../entity/value-object.js';
 import { FeedRepository } from '../port/feed-repository.js';
 
 export const CreateFeedInput = Schema.Struct({

@@ -1,6 +1,6 @@
 import { Context, type Effect, type Option } from 'effect';
 import type { Feed, FeedId } from '../entity/feed.js';
-import type { UserId } from '../entity/user.js';
+import type { UserId } from '../entity/value-object.js';
 import type { AppError } from './app-error.js';
 
 export interface IFeedRepository {

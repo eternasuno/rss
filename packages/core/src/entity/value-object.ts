@@ -1,18 +1,32 @@
 import { Schema } from 'effect';
 
-export const Email = Schema.NonEmptyTrimmedString.pipe(
-  Schema.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/),
-  Schema.brand('Email')
+export const UserId = Schema.String.pipe(Schema.brand('UserId'));
+
+export type UserId = typeof UserId.Type;
+
+export type JSONValue =
+  | string
+  | number
+  | boolean
+  | null
+  | ReadonlyArray<JSONValue>
+  | { readonly [key: string]: JSONValue };
+
+export const JSONValue: Schema.Schema<JSONValue> = Schema.Union(
+  Schema.String,
+  Schema.Number,
+  Schema.Boolean,
+  Schema.Null,
+  Schema.Array(Schema.suspend((): Schema.Schema<JSONValue> => JSONValue)),
+  Schema.Record({
+    key: Schema.String,
+    value: Schema.suspend((): Schema.Schema<JSONValue> => JSONValue),
+  })
 );
 
-export type Email = typeof Email.Type;
+export const ExtraData = Schema.Record({
+  key: Schema.String,
+  value: JSONValue,
+});
 
-export const Password = Schema.NonEmptyTrimmedString.pipe(
-  Schema.maxLength(128),
-  Schema.pattern(
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"|,.<>/?`~]).{8,}$/
-  ),
-  Schema.brand('Password')
-);
-
-export type Password = typeof Password.Type;
+export type ExtraData = typeof ExtraData.Type;
