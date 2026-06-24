@@ -140,19 +140,6 @@ SESSION_SECRET=change-me-to-a-32-char-random-string
 | `pnpm run db:generate` | apps/web | Generate Drizzle migrations |
 | `pnpm run db:migrate` | apps/web | Apply migrations |
 
-## Code Conventions (Biome Lint)
-
-Enforced via `biome.json` `linter.rules`:
-
-| Rule | Constraint | Severity |
-|------|-----------|----------|
-| `noExcessiveLinesPerFile` | ≤ 150 lines per file | warn |
-| `noExcessiveLinesPerFunction` | ≤ 20 lines per function body | error |
-| `noExcessiveCognitiveComplexity` | ≤ 8 cognitive complexity per function | error |
-| `useMaxParams` | ≤ 1 parameter per function | error |
-| `useConst` | prefer `const` over `let` when no reassignment | error (via recommended preset) |
-| `noVar` | forbid `var` entirely | error |
-
 ## Tech Stack
 
 | Layer | Technology |
