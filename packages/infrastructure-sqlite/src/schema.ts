@@ -1,20 +1,27 @@
-import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import * as D from 'drizzle-orm/sqlite-core';
 
-export const feeds = sqliteTable('feeds', {
-  createdAt: text('created_at').notNull(),
-  data: text('data', { mode: 'json' }).$type<Record<string, unknown>>().default({}),
-  description: text('description').notNull(),
-  id: text('id').primaryKey(),
-  link: text('link').notNull(),
-  title: text('title').notNull(),
-  updatedAt: text('updated_at').notNull(),
-  userId: text('user_id').notNull(),
-});
+export const feeds = D.sqliteTable(
+  'feeds',
+  {
+    createdAt: D.integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+    description: D.text('description').notNull(),
+    extraData: D.text('data', { mode: 'json' }).$type<Record<string, unknown>>().default({}),
+    id: D.text('id').primaryKey(),
+    link: D.text('link').notNull(),
+    title: D.text('title').notNull(),
+    userId: D.text('user_id').notNull(),
+  },
+  (table) => [D.index('user_id_idx').on(table.userId)]
+);
 
-export const items = sqliteTable('items', {
-  createdAt: text('created_at').notNull(),
-  data: text('data', { mode: 'json' }).$type<Record<string, unknown>>().default({}),
-  feedId: text('feed_id').notNull(),
-  id: text('id').primaryKey(),
-  title: text('title').notNull(),
-});
+export const items = D.sqliteTable(
+  'items',
+  {
+    createdAt: D.integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+    extraData: D.text('data', { mode: 'json' }).$type<Record<string, unknown>>().default({}),
+    feedId: D.text('feed_id').notNull(),
+    id: D.text('id').primaryKey(),
+    title: D.text('title').notNull(),
+  },
+  (table) => [D.index('feed_id_idx').on(table.feedId)]
+);

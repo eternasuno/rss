@@ -1,28 +1,28 @@
 import { assert, it } from '@effect/vitest';
-import type { Feed, FeedId, Item, ItemId, UserId } from '@rss/core/entity';
+import type { Feed, FeedData, FeedId, Item, ItemId, UserId } from '@rss/core/entity';
 import { FeedGenerator } from '@rss/core/port';
-import { Effect } from 'effect';
+import { DateTime, Effect } from 'effect';
 import { FeedsmithGeneratorLayer } from '../src/feed-generator';
 
 const feed: Feed = {
-  createdAt: new Date(),
+  createdAt: DateTime.unsafeNow(),
   data: {
-    description: 'A test feed' as never,
+    description: 'A test feed',
     link: new URL('https://example.com'),
-    title: 'Test Feed' as never,
-  },
+    title: 'Test Feed',
+  } as FeedData,
   id: 'test-feed-id' as FeedId,
   userId: 'test-user-id' as UserId,
-} as unknown as Feed;
+};
 
 const item: Item = {
-  createdAt: new Date(),
+  createdAt: DateTime.unsafeNow(),
   data: {
     title: 'Test Item' as never,
   },
   feedId: 'test-feed-id' as FeedId,
   id: 'test-item-id' as ItemId,
-} as unknown as Item;
+};
 
 it.effect('FeedsmithGenerator: generates valid RSS XML with items', () =>
   Effect.gen(function* () {
