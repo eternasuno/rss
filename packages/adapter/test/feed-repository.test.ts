@@ -8,19 +8,10 @@ import { createFeedRepository } from '../src/feed-repository';
 const setupDb = () => {
   const db = createClient(':memory:');
   db.run(
-    sql.raw(`CREATE TABLE users (
-    id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL, created_at TEXT NOT NULL)`)
-  );
-  db.run(
     sql.raw(`CREATE TABLE feeds (
-    id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id),
+    id TEXT PRIMARY KEY, user_id TEXT NOT NULL,
     title TEXT NOT NULL, description TEXT NOT NULL, link TEXT NOT NULL,
     data TEXT DEFAULT '{}', created_at TEXT NOT NULL, updated_at TEXT NOT NULL)`)
-  );
-  db.run(
-    sql.raw(`INSERT INTO users (id, email, password_hash, created_at)
-    VALUES ('user-1', 'test@test.com', 'hash', '2024-01-01T00:00:00.000Z')`)
   );
   return db;
 };

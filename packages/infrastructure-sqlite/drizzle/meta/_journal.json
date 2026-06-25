@@ -7,6 +7,13 @@
       "tag": "0000_normal_grandmaster",
       "version": "6",
       "when": 1782024576435
+    },
+    {
+      "breakpoints": true,
+      "idx": 1,
+      "tag": "0001_brave_proteus",
+      "version": "6",
+      "when": 1782369685844
     }
   ],
   "version": "7"
