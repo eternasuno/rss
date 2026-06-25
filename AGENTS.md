@@ -65,10 +65,11 @@ packages/core/src/
 │   └── item.ts
 ├── port/              # Interface contracts (Effect Tags) — DONE
 │   ├── app-error.ts       # Unified AppError (Data.TaggedError with ErrorCode literal)
+│   ├── crypto.ts          # UUID generation
 │   ├── feed-generator.ts  # RSS XML generation via feedsmith
 │   ├── feed-repository.ts
 │   └── item-repository.ts
-└── usecase/           # Business logic (Effect pipelines) — TODO
+└── usecase/           # Business logic (Effect pipelines) — DONE
     ├── add-item.ts
     ├── create-feed.ts
     ├── get-feed.ts
@@ -124,6 +125,8 @@ SESSION_SECRET=change-me-to-a-32-char-random-string
 | `pnpm lint` | root | Lint all packages |
 | `pnpm typecheck` | root | Type-check all packages |
 | `pnpm format` | root | Format with Biome |
+| `pnpm run test` | packages/core | Run core tests |
+| `pnpm run test:watch` | packages/core | Watch mode |
 | `pnpm run typecheck` | packages/core | Type-check core package |
 | `pnpm run db:generate` | apps/web | Generate Drizzle migrations |
 | `pnpm run db:migrate` | apps/web | Apply migrations |
