@@ -14,9 +14,7 @@ export const feeds = sqliteTable('feeds', {
 export const items = sqliteTable('items', {
   createdAt: text('created_at').notNull(),
   data: text('data', { mode: 'json' }).$type<Record<string, unknown>>().default({}),
-  feedId: text('feed_id')
-    .notNull()
-    .references(() => feeds.id),
+  feedId: text('feed_id').notNull(),
   id: text('id').primaryKey(),
   title: text('title').notNull(),
 });

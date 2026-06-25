@@ -15,7 +15,7 @@ const setupDb = () => {
   );
   db.run(
     sql.raw(`CREATE TABLE items (
-    id TEXT PRIMARY KEY, feed_id TEXT NOT NULL REFERENCES feeds(id),
+    id TEXT PRIMARY KEY, feed_id TEXT NOT NULL,
     title TEXT NOT NULL, data TEXT DEFAULT '{}', created_at TEXT NOT NULL)`)
   );
   db.run(
