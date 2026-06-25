@@ -72,9 +72,8 @@ packages/core/src/
 └── usecase/           # Business logic (Effect pipelines) — DONE
     ├── add-item.ts
     ├── create-feed.ts
-    ├── get-feed.ts
-    ├── get-feed-detail.ts
-    └── regenerate-xml.ts
+    ├── generate-xml.ts     # Composes getFeed + FeedGenerator.generateFeedXml
+    └── get-feed.ts
 ```
 
 ### Adapter Layer (`packages/infra-*` or `apps/web/src/adapter/`) — TODO
@@ -121,13 +120,11 @@ SESSION_SECRET=change-me-to-a-32-char-random-string
 
 | Command | Scope | Description |
 |---------|-------|-------------|
-| `pnpm dev` | root | Start Turborepo dev |
-| `pnpm lint` | root | Lint all packages |
-| `pnpm typecheck` | root | Type-check all packages |
-| `pnpm format` | root | Format with Biome |
+| `pnpm build` | root | Build all packages |
+| `pnpm check` | root | Type-check + lint all packages |
+| `pnpm test` | root | Run all tests |
 | `pnpm run test` | packages/core | Run core tests |
 | `pnpm run test:watch` | packages/core | Watch mode |
-| `pnpm run typecheck` | packages/core | Type-check core package |
 | `pnpm run db:generate` | apps/web | Generate Drizzle migrations |
 | `pnpm run db:migrate` | apps/web | Apply migrations |
 
@@ -141,6 +138,6 @@ SESSION_SECRET=change-me-to-a-32-char-random-string
 | Build tool | Vite 7 |
 | Database | SQLite (Drizzle ORM + better-sqlite3) |
 | RSS generation | feedsmith |
-| Monorepo | pnpm workspace + Turborepo |
+| Monorepo | pnpm 11 + Turborepo |
 | Lint/Format | Biome |
 | Auth | better-auth (TanStack Start) |
