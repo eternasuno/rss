@@ -1,6 +1,6 @@
 import { assert, it } from '@effect/vitest';
 import { Effect, Exit, Schema } from 'effect';
-import { ItemData } from '../../src/entity/item.js';
+import { ItemData } from '../../src/entity/item';
 
 it.effect('ItemData: should decode valid item data with title only', () =>
   Effect.gen(function* () {

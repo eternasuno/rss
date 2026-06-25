@@ -1,6 +1,6 @@
 import { Effect, Layer, Option } from 'effect';
-import { type IItemRepository, ItemRepository } from '../../src/port/item-repository.js';
-import { sampleItem } from './data/item.js';
+import { type IItemRepository, ItemRepository } from '../../src/port/item-repository';
+import { sampleItem } from './data/item';
 
 const mockItemRepository: IItemRepository = {
   create: (item) => Effect.succeed(item),

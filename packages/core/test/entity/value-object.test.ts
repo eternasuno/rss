@@ -1,6 +1,6 @@
 import { assert, it } from '@effect/vitest';
 import { Effect, Exit, Schema } from 'effect';
-import { ExtraData, UserId } from '../../src/entity/value-object.js';
+import { ExtraData, UserId } from '../../src/entity/value-object';
 
 it.effect('ExtraData: should decode object with various JSON value types', () =>
   Effect.gen(function* () {

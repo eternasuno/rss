@@ -1,6 +1,6 @@
 import { Effect, Layer, Option } from 'effect';
-import { FeedRepository, type IFeedRepository } from '../../src/port/feed-repository.js';
-import { sampleFeed } from './data/feed.js';
+import { FeedRepository, type IFeedRepository } from '../../src/port/feed-repository';
+import { sampleFeed } from './data/feed';
 
 const mockFeedRepository: IFeedRepository = {
   create: (feed) => Effect.succeed(feed),

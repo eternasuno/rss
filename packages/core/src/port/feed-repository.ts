@@ -1,7 +1,7 @@
 import { Context, type Effect, type Option } from 'effect';
-import type { Feed, FeedData, FeedId } from '../entity/feed.js';
-import type { UserId } from '../entity/value-object.js';
-import type { AppError } from './app-error.js';
+import type { Feed, FeedData, FeedId } from '../entity/feed';
+import type { UserId } from '../entity/value-object';
+import type { AppError } from './app-error';
 
 export interface IFeedRepository {
   readonly create: (feed: Feed) => Effect.Effect<Feed, AppError, never>;

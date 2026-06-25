@@ -1,9 +1,9 @@
 import { Effect, Option } from 'effect';
-import type { FeedId } from '../entity/feed.js';
-import { AppError } from '../port/app-error.js';
-import { FeedGenerator } from '../port/feed-generator.js';
-import { FeedRepository } from '../port/feed-repository.js';
-import { ItemRepository } from '../port/item-repository.js';
+import type { FeedId } from '../entity/feed';
+import { AppError } from '../port/app-error';
+import { FeedGenerator } from '../port/feed-generator';
+import { FeedRepository } from '../port/feed-repository';
+import { ItemRepository } from '../port/item-repository';
 
 export const regenerateXml = (feedId: FeedId) =>
   Effect.gen(function* () {

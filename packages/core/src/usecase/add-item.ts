@@ -1,10 +1,10 @@
 import { DateTime, Effect, Option, Schema } from 'effect';
-import { FeedId } from '../entity/feed.js';
-import { type Item, ItemData, ItemId } from '../entity/item.js';
-import { AppError } from '../port/app-error.js';
-import { Crypto } from '../port/crypto.js';
-import { FeedRepository } from '../port/feed-repository.js';
-import { ItemRepository } from '../port/item-repository.js';
+import { FeedId } from '../entity/feed';
+import { type Item, ItemData, ItemId } from '../entity/item';
+import { AppError } from '../port/app-error';
+import { Crypto } from '../port/crypto';
+import { FeedRepository } from '../port/feed-repository';
+import { ItemRepository } from '../port/item-repository';
 
 export const AddItemInput = Schema.Struct({
   data: ItemData,

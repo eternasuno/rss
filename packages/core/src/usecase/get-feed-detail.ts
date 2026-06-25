@@ -1,9 +1,9 @@
 import { Effect, Option } from 'effect';
-import type { Feed, FeedId } from '../entity/feed.js';
-import type { Item } from '../entity/item.js';
-import { AppError } from '../port/app-error.js';
-import { FeedRepository } from '../port/feed-repository.js';
-import { ItemRepository } from '../port/item-repository.js';
+import type { Feed, FeedId } from '../entity/feed';
+import type { Item } from '../entity/item';
+import { AppError } from '../port/app-error';
+import { FeedRepository } from '../port/feed-repository';
+import { ItemRepository } from '../port/item-repository';
 
 export const getFeedDetail = (feedId: FeedId) =>
   Effect.gen(function* () {

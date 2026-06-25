@@ -1,6 +1,6 @@
 import { DateTime } from 'effect';
-import { FeedId } from '../../../src/entity/feed.js';
-import { type Item, type ItemData, ItemId } from '../../../src/entity/item.js';
+import { FeedId } from '../../../src/entity/feed';
+import { type Item, type ItemData, ItemId } from '../../../src/entity/item';
 
 export const sampleItemData = {
   title: 'Test Item Title',

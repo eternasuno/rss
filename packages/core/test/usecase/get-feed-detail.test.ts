@@ -1,9 +1,9 @@
 import { assert, it } from '@effect/vitest';
 import { Effect, Layer } from 'effect';
-import { FeedId } from '../../src/entity/feed.js';
-import { getFeedDetail } from '../../src/usecase/get-feed-detail.js';
-import { FeedRepositoryEmpty, FeedRepositoryTest } from '../mock/feed-repository.js';
-import { ItemRepositoryTest } from '../mock/item-repository.js';
+import { FeedId } from '../../src/entity/feed';
+import { getFeedDetail } from '../../src/usecase/get-feed-detail';
+import { FeedRepositoryEmpty, FeedRepositoryTest } from '../mock/feed-repository';
+import { ItemRepositoryTest } from '../mock/item-repository';
 
 it.effect('getFeedDetail: should return feed detail with items when feed exists', () =>
   Effect.gen(function* () {

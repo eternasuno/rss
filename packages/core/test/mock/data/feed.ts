@@ -1,6 +1,6 @@
 import { DateTime } from 'effect';
-import { type Feed, type FeedData, FeedId } from '../../../src/entity/feed.js';
-import { UserId } from '../../../src/entity/value-object.js';
+import { type Feed, type FeedData, FeedId } from '../../../src/entity/feed';
+import { UserId } from '../../../src/entity/value-object';
 
 export const sampleFeedData = {
   description: 'A test feed description',

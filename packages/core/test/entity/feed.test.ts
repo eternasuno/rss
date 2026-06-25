@@ -1,6 +1,6 @@
 import { assert, it } from '@effect/vitest';
 import { Effect, Exit, Schema } from 'effect';
-import { FeedData } from '../../src/entity/feed.js';
+import { FeedData } from '../../src/entity/feed';
 
 it.effect('FeedData: should decode valid feed data with all required fields', () =>
   Effect.gen(function* () {

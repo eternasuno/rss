@@ -1,10 +1,10 @@
 import { assert, it } from '@effect/vitest';
 import { Effect, Layer } from 'effect';
-import { FeedId } from '../../src/entity/feed.js';
-import { regenerateXml } from '../../src/usecase/regenerate-xml.js';
-import { FeedGeneratorTest } from '../mock/feed-generator.js';
-import { FeedRepositoryEmpty, FeedRepositoryTest } from '../mock/feed-repository.js';
-import { ItemRepositoryTest } from '../mock/item-repository.js';
+import { FeedId } from '../../src/entity/feed';
+import { regenerateXml } from '../../src/usecase/regenerate-xml';
+import { FeedGeneratorTest } from '../mock/feed-generator';
+import { FeedRepositoryEmpty, FeedRepositoryTest } from '../mock/feed-repository';
+import { ItemRepositoryTest } from '../mock/item-repository';
 
 const XML_OUTPUT =
   '<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Test</title></channel></rss>';

@@ -1,7 +1,7 @@
 import { Context, type Effect, type Option } from 'effect';
-import type { FeedId } from '../entity/feed.js';
-import type { Item, ItemId } from '../entity/item.js';
-import type { AppError } from './app-error.js';
+import type { FeedId } from '../entity/feed';
+import type { Item, ItemId } from '../entity/item';
+import type { AppError } from './app-error';
 
 export interface IItemRepository {
   readonly create: (item: Item) => Effect.Effect<Item, AppError, never>;

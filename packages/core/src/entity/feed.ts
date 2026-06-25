@@ -1,5 +1,5 @@
 import { Schema } from 'effect';
-import { ExtraData, UserId } from './value-object.js';
+import { ExtraData, UserId } from './value-object';
 
 export const FeedId = Schema.String.pipe(Schema.brand('FeedId'));
 

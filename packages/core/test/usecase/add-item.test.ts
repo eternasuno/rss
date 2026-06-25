@@ -1,12 +1,12 @@
 import { assert, it } from '@effect/vitest';
 import { Effect, Layer } from 'effect';
-import { FeedId } from '../../src/entity/feed.js';
-import { addItem } from '../../src/usecase/add-item.js';
-import { CryptoTest } from '../mock/crypto.js';
-import { TEST_UUID } from '../mock/data/crypto.js';
-import { sampleItemData } from '../mock/data/item.js';
-import { FeedRepositoryEmpty, FeedRepositoryTest } from '../mock/feed-repository.js';
-import { ItemRepositoryEmpty, ItemRepositoryTest } from '../mock/item-repository.js';
+import { FeedId } from '../../src/entity/feed';
+import { addItem } from '../../src/usecase/add-item';
+import { CryptoTest } from '../mock/crypto';
+import { TEST_UUID } from '../mock/data/crypto';
+import { sampleItemData } from '../mock/data/item';
+import { FeedRepositoryEmpty, FeedRepositoryTest } from '../mock/feed-repository';
+import { ItemRepositoryEmpty, ItemRepositoryTest } from '../mock/item-repository';
 
 it.effect('addItem: should create an item under an existing feed', () =>
   Effect.gen(function* () {
