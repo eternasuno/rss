@@ -1,4 +1,4 @@
-import { Effect, Option } from 'effect';
+import { Effect } from 'effect';
 import type { FeedId } from '../entity/feed';
 import { AppError } from '../port/app-error';
 import { FeedRepository } from '../port/feed-repository';
@@ -9,13 +9,14 @@ export const getFeed = (feedId: FeedId) =>
     const feedRepo = yield* FeedRepository;
     const itemRepo = yield* ItemRepository;
 
-    const found = yield* feedRepo.findById(feedId);
+    const feed = yield* feedRepo.findById(feedId).pipe(
+      Effect.flatten,
+      Effect.catchTag(
+        'NoSuchElementException',
+        () => new AppError({ code: 'NOT_FOUND', message: 'Feed not found' })
+      )
+    );
 
-    if (Option.isNone(found)) {
-      return yield* new AppError({ code: 'NOT_FOUND', message: 'Feed not found' });
-    }
-
-    const feed = found.value;
     const items = yield* itemRepo.findByFeedId(feedId);
 
     return { feed, items };

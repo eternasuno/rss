@@ -1,4 +1,4 @@
-import { DateTime, Effect, Option, Schema } from 'effect';
+import { DateTime, Effect, Schema } from 'effect';
 import { FeedId } from '../entity/feed';
 import { type Item, ItemData, ItemId } from '../entity/item';
 import { AppError } from '../port/app-error';
@@ -19,20 +19,17 @@ export const addItem = (input: AddItemInput) =>
     const feedRepo = yield* FeedRepository;
     const itemRepo = yield* ItemRepository;
 
-    const feed = yield* feedRepo.findById(input.feedId);
-    if (Option.isNone(feed)) {
-      return yield* new AppError({ code: 'NOT_FOUND', message: 'Feed not found' });
-    }
+    yield* feedRepo.findById(input.feedId).pipe(
+      Effect.flatten,
+      Effect.catchTag(
+        'NoSuchElementException',
+        () => new AppError({ code: 'NOT_FOUND', message: 'Feed not found' })
+      )
+    );
 
-    const itemId = ItemId.make(yield* crypto.generateUUId());
     const createdAt = yield* DateTime.now;
-    const item: Item = {
-      createdAt,
-      data: input.data,
-      feedId: input.feedId,
-      id: itemId,
-    };
+    const id = ItemId.make(yield* crypto.generateUUId());
+    const item: Item = { ...input, createdAt, id };
 
-    const saved = yield* itemRepo.create(item);
-    return saved;
+    return yield* itemRepo.create(item);
   });

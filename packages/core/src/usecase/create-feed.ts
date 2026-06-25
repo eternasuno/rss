@@ -15,14 +15,10 @@ export const createFeed = (input: CreateFeedInput) =>
   Effect.gen(function* () {
     const crypto = yield* Crypto;
     const feedRepo = yield* FeedRepository;
-    const feedId = FeedId.make(yield* crypto.generateUUId());
-    const now = yield* DateTime.now;
-    const feed: Feed = {
-      createdAt: now,
-      data: input.data,
-      id: feedId,
-      userId: input.userId,
-    };
+
+    const createdAt = yield* DateTime.now;
+    const id = FeedId.make(yield* crypto.generateUUId());
+    const feed: Feed = { ...input, createdAt, id };
 
     return yield* feedRepo.create(feed);
   });

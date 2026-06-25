@@ -7,21 +7,15 @@
     "vitest": "catalog:"
   },
   "exports": {
-    ".": "./src/entity.ts",
-    "./entity/*": "./src/entity/*.ts",
-    "./port/*": "./src/port/*.ts",
-    "./usecase/*": "./src/usecase/*.ts"
+    "./entity": "./src/entity.ts",
+    "./port": "./src/port.ts",
+    "./usecase": "./src/usecase.ts"
   },
-  "main": "./src/entity.ts",
-  "name": "@rss/core",
+  "name": "@core",
   "private": true,
   "scripts": {
-    "lint": "biome check .",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "check": "tsc --noEmit && biome check --fix",
+    "test": "vitest run"
   },
-  "type": "module",
-  "types": "./src/entity.ts",
-  "version": "0.1.0"
+  "type": "module"
 }

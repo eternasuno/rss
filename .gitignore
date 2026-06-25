@@ -46,4 +46,9 @@ routeTree.gen.ts
 # pnpm store
 .pnpm-store/
 
+# build output
 dist
+build
+
+# tsbuildinfo
+tsconfig.tsbuildinfo

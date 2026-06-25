@@ -17,10 +17,10 @@ export const JSONValue: Schema.Schema<JSONValue> = Schema.Union(
   Schema.Number,
   Schema.Boolean,
   Schema.Null,
-  Schema.Array(Schema.suspend((): Schema.Schema<JSONValue> => JSONValue)),
+  Schema.Array(Schema.suspend(() => JSONValue)),
   Schema.Record({
     key: Schema.String,
-    value: Schema.suspend((): Schema.Schema<JSONValue> => JSONValue),
+    value: Schema.suspend(() => JSONValue),
   })
 );
 

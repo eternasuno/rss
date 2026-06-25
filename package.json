@@ -6,15 +6,13 @@
     "typescript": "latest"
   },
   "name": "rss",
-  "packageManager": "pnpm@10.0.0",
+  "packageManager": "pnpm@11.9.0",
   "private": true,
   "scripts": {
     "build": "turbo build",
-    "dev": "turbo dev --filter=@rss/web",
-    "format": "biome check --write .",
-    "lint": "turbo lint",
+    "check": "turbo check",
     "prepare": "effect-language-service patch",
-    "typecheck": "turbo typecheck"
+    "test": "turbo test"
   },
   "type": "module"
 }
