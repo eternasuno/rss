@@ -1,0 +1,29 @@
+{
+  "dependencies": {
+    "better-sqlite3": "^12.11.0",
+    "drizzle-orm": "^0.45.0"
+  },
+  "devDependencies": {
+    "@effect/vitest": "catalog:",
+    "@types/better-sqlite3": "^7.6.0",
+    "@types/node": "^22.0.0",
+    "drizzle-kit": "^0.31.0",
+    "effect": "catalog:",
+    "vitest": "catalog:"
+  },
+  "exports": {
+    "./db": "./src/db.ts",
+    "./schema": "./src/schema.ts"
+  },
+  "name": "@rss/infrastructure-sqlite",
+  "private": true,
+  "scripts": {
+    "check": "tsc --noEmit && biome check --fix",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "test": "vitest run"
+  },
+  "type": "module"
+}

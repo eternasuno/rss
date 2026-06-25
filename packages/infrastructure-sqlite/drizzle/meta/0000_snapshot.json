@@ -1,0 +1,256 @@
+{
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  },
+  "dialect": "sqlite",
+  "enums": {},
+  "id": "512534d3-dd4d-4d63-8ef0-bb97cae45026",
+  "internal": {
+    "indexes": {}
+  },
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "api_keys": {
+      "checkConstraints": {},
+      "columns": {
+        "created_at": {
+          "autoincrement": false,
+          "name": "created_at",
+          "notNull": true,
+          "primaryKey": false,
+          "type": "text"
+        },
+        "expires_at": {
+          "autoincrement": false,
+          "name": "expires_at",
+          "notNull": false,
+          "primaryKey": false,
+          "type": "text"
+        },
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "notNull": true,
+          "primaryKey": true,
+          "type": "text"
+        },
+        "key": {
+          "autoincrement": false,
+          "name": "key",
+          "notNull": true,
+          "primaryKey": false,
+          "type": "text"
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "notNull": true,
+          "primaryKey": false,
+          "type": "text"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "foreignKeys": {
+        "api_keys_user_id_users_id_fk": {
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "name": "api_keys_user_id_users_id_fk",
+          "onDelete": "no action",
+          "onUpdate": "no action",
+          "tableFrom": "api_keys",
+          "tableTo": "users"
+        }
+      },
+      "indexes": {
+        "api_keys_key_unique": {
+          "columns": ["key"],
+          "isUnique": true,
+          "name": "api_keys_key_unique"
+        }
+      },
+      "name": "api_keys",
+      "uniqueConstraints": {}
+    },
+    "feeds": {
+      "checkConstraints": {},
+      "columns": {
+        "created_at": {
+          "autoincrement": false,
+          "name": "created_at",
+          "notNull": true,
+          "primaryKey": false,
+          "type": "text"
+        },
+        "data": {
+          "autoincrement": false,
+          "default": "'{}'",
+          "name": "data",
+          "notNull": false,
+          "primaryKey": false,
+          "type": "text"
+        },
+        "description": {
+          "autoincrement": false,
+          "name": "description",
+          "notNull": true,
+          "primaryKey": false,
+          "type": "text"
+        },
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "notNull": true,
+          "primaryKey": true,
+          "type": "text"
+        },
+        "link": {
+          "autoincrement": false,
+          "name": "link",
+          "notNull": true,
+          "primaryKey": false,
+          "type": "text"
+        },
+        "title": {
+          "autoincrement": false,
+          "name": "title",
+          "notNull": true,
+          "primaryKey": false,
+          "type": "text"
+        },
+        "updated_at": {
+          "autoincrement": false,
+          "name": "updated_at",
+          "notNull": true,
+          "primaryKey": false,
+          "type": "text"
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "notNull": true,
+          "primaryKey": false,
+          "type": "text"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "foreignKeys": {
+        "feeds_user_id_users_id_fk": {
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "name": "feeds_user_id_users_id_fk",
+          "onDelete": "no action",
+          "onUpdate": "no action",
+          "tableFrom": "feeds",
+          "tableTo": "users"
+        }
+      },
+      "indexes": {},
+      "name": "feeds",
+      "uniqueConstraints": {}
+    },
+    "items": {
+      "checkConstraints": {},
+      "columns": {
+        "created_at": {
+          "autoincrement": false,
+          "name": "created_at",
+          "notNull": true,
+          "primaryKey": false,
+          "type": "text"
+        },
+        "data": {
+          "autoincrement": false,
+          "default": "'{}'",
+          "name": "data",
+          "notNull": false,
+          "primaryKey": false,
+          "type": "text"
+        },
+        "feed_id": {
+          "autoincrement": false,
+          "name": "feed_id",
+          "notNull": true,
+          "primaryKey": false,
+          "type": "text"
+        },
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "notNull": true,
+          "primaryKey": true,
+          "type": "text"
+        },
+        "title": {
+          "autoincrement": false,
+          "name": "title",
+          "notNull": true,
+          "primaryKey": false,
+          "type": "text"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "foreignKeys": {
+        "items_feed_id_feeds_id_fk": {
+          "columnsFrom": ["feed_id"],
+          "columnsTo": ["id"],
+          "name": "items_feed_id_feeds_id_fk",
+          "onDelete": "no action",
+          "onUpdate": "no action",
+          "tableFrom": "items",
+          "tableTo": "feeds"
+        }
+      },
+      "indexes": {},
+      "name": "items",
+      "uniqueConstraints": {}
+    },
+    "users": {
+      "checkConstraints": {},
+      "columns": {
+        "created_at": {
+          "autoincrement": false,
+          "name": "created_at",
+          "notNull": true,
+          "primaryKey": false,
+          "type": "text"
+        },
+        "email": {
+          "autoincrement": false,
+          "name": "email",
+          "notNull": true,
+          "primaryKey": false,
+          "type": "text"
+        },
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "notNull": true,
+          "primaryKey": true,
+          "type": "text"
+        },
+        "password_hash": {
+          "autoincrement": false,
+          "name": "password_hash",
+          "notNull": true,
+          "primaryKey": false,
+          "type": "text"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "foreignKeys": {},
+      "indexes": {
+        "users_email_unique": {
+          "columns": ["email"],
+          "isUnique": true,
+          "name": "users_email_unique"
+        }
+      },
+      "name": "users",
+      "uniqueConstraints": {}
+    }
+  },
+  "version": "6",
+  "views": {}
+}

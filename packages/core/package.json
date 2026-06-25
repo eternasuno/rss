@@ -11,7 +11,7 @@
     "./port": "./src/port.ts",
     "./usecase": "./src/usecase.ts"
   },
-  "name": "@core",
+  "name": "@rss/core",
   "private": true,
   "scripts": {
     "check": "tsc --noEmit && biome check --fix",
