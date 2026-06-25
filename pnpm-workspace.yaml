@@ -3,4 +3,6 @@ packages:
   - "packages/*"
 
 catalog:
+  "@effect/vitest": 0.29.0
   effect: 3.21.4
+  vitest: ^3.2.0

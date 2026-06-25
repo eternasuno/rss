@@ -22,13 +22,8 @@ export type RssGenParams = {
 
 export const generateFeedXml = ({ feed, items }: RssGenParams): string =>
   generateRssFeed({
-    description: feed.description,
-    language: (feed.data.language as string) || 'en',
-    link: feed.link,
-    title: feed.title,
     ...feed.data,
     items: items.map((item) => ({
-      title: item.title,
       ...item.data,
     })),
   });

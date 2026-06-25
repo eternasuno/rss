@@ -1,33 +1,26 @@
 import { DateTime, Effect, Schema } from 'effect';
-import { type Feed, FeedId } from '../entity/feed.js';
-import { ExtraData, UserId } from '../entity/value-object.js';
+import { type Feed, FeedData, FeedId } from '../entity/feed.js';
+import { UserId } from '../entity/value-object.js';
+import { Crypto } from '../port/crypto.js';
 import { FeedRepository } from '../port/feed-repository.js';
 
 export const CreateFeedInput = Schema.Struct({
-  description: Schema.NonEmptyTrimmedString,
-  extraData: Schema.optionalWith(ExtraData, { default: () => ({}) }),
-  link: Schema.URL,
-  title: Schema.NonEmptyTrimmedString,
+  data: FeedData,
   userId: UserId,
 });
 
 export type CreateFeedInput = typeof CreateFeedInput.Type;
 
-const newFeedId = () => Effect.sync(() => FeedId.make(crypto.randomUUID()));
-
 export const createFeed = (input: CreateFeedInput) =>
   Effect.gen(function* () {
+    const crypto = yield* Crypto;
     const feedRepo = yield* FeedRepository;
-    const feedId = yield* newFeedId();
+    const feedId = FeedId.make(yield* crypto.generateUUId());
     const now = yield* DateTime.now;
     const feed: Feed = {
       createdAt: now,
-      description: input.description,
-      extraData: input.extraData,
+      data: input.data,
       id: feedId,
-      link: input.link,
-      title: input.title,
-      updatedAt: now,
       userId: input.userId,
     };
 

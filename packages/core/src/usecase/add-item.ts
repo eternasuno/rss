@@ -1,23 +1,21 @@
 import { DateTime, Effect, Option, Schema } from 'effect';
 import { FeedId } from '../entity/feed.js';
-import { type Item, ItemId } from '../entity/item.js';
-import { ExtraData } from '../entity/value-object.js';
+import { type Item, ItemData, ItemId } from '../entity/item.js';
 import { AppError } from '../port/app-error.js';
+import { Crypto } from '../port/crypto.js';
 import { FeedRepository } from '../port/feed-repository.js';
 import { ItemRepository } from '../port/item-repository.js';
 
 export const AddItemInput = Schema.Struct({
-  extraData: Schema.optionalWith(ExtraData, { default: () => ({}) }),
+  data: ItemData,
   feedId: FeedId,
-  title: Schema.NonEmptyTrimmedString,
 });
 
 export type AddItemInput = typeof AddItemInput.Type;
 
-const newItemId = () => Effect.sync(() => ItemId.make(crypto.randomUUID()));
-
 export const addItem = (input: AddItemInput) =>
   Effect.gen(function* () {
+    const crypto = yield* Crypto;
     const feedRepo = yield* FeedRepository;
     const itemRepo = yield* ItemRepository;
 
@@ -26,17 +24,15 @@ export const addItem = (input: AddItemInput) =>
       return yield* new AppError({ code: 'NOT_FOUND', message: 'Feed not found' });
     }
 
-    const itemId = yield* newItemId();
+    const itemId = ItemId.make(yield* crypto.generateUUId());
     const createdAt = yield* DateTime.now;
     const item: Item = {
       createdAt,
-      extraData: input.extraData,
+      data: input.data,
       feedId: input.feedId,
       id: itemId,
-      title: input.title,
     };
 
     const saved = yield* itemRepo.create(item);
-
     return saved;
   });
