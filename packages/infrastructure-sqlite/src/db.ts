@@ -1,34 +1,32 @@
-import * as path from 'node:path';
-import Database from 'better-sqlite3';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
+import * as SqliteDrizzle from '@effect/sql-drizzle/Sqlite';
+import { SqliteClient } from '@effect/sql-sqlite-node';
+import type { SqliteRemoteDatabase } from 'drizzle-orm/sqlite-proxy';
+import { Config, Effect, Layer } from 'effect';
+import type { ConfigError } from 'effect/ConfigError';
 import * as schema from './schema';
 
-const getDefaultPath = (): string => {
-  const envPath = process.env.DATABASE_URL;
-  if (envPath === ':memory:') {
-    return ':memory:';
-  }
-  if (envPath) {
-    return envPath;
-  }
-  return path.join(process.cwd(), 'data', 'rss.db');
-};
+const filenameConfig = Config.string('DATABASE_URL').pipe(Config.withDefault('./data/rss.db'));
 
-export const createClient = (dbPath?: string) => {
-  const resolvedPath = dbPath ?? getDefaultPath();
-  const sqlite = new Database(resolvedPath);
-  sqlite.pragma('journal_mode = WAL');
-  sqlite.pragma('foreign_keys = ON');
-  return drizzle({ client: sqlite, schema });
-};
+const SqlLive = SqliteClient.layerConfig({
+  filename: filenameConfig,
+});
 
-export const runMigrate = ({
-  client,
-  migrationsFolder,
-}: {
-  client: ReturnType<typeof createClient>;
-  migrationsFolder: string;
-}) => {
-  migrate(client, { migrationsFolder });
-};
+const makeDrizzleLayer = (client: ReturnType<typeof SqliteClient.layer>) =>
+  Layer.scoped(
+    SqliteDrizzle.SqliteDrizzle,
+    SqliteDrizzle.make({ schema }) as unknown as Effect.Effect<SqliteRemoteDatabase>
+  ).pipe(Layer.provideMerge(client));
+
+export const DrizzleLayer = makeDrizzleLayer(
+  SqlLive
+) as unknown as Layer.Layer<SqliteDrizzle.SqliteDrizzle>;
+
+export const createClient: Effect.Effect<SqliteRemoteDatabase, ConfigError> = Effect.map(
+  SqliteDrizzle.SqliteDrizzle,
+  (db) => db
+).pipe(Effect.provide(DrizzleLayer));
+
+export const createTestClient: Effect.Effect<SqliteRemoteDatabase, ConfigError> = Effect.map(
+  SqliteDrizzle.SqliteDrizzle,
+  (db) => db
+).pipe(Effect.provide(makeDrizzleLayer(SqliteClient.layer({ filename: ':memory:' }))));

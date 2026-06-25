@@ -1,12 +1,21 @@
+import * as SqliteDrizzle from '@effect/sql-drizzle/Sqlite';
 import { type Feed, type FeedData, FeedId, UserId } from '@rss/core/entity';
 import { AppError, FeedRepository, type IFeedRepository } from '@rss/core/port';
-import { createClient } from '@rss/infrastructure-sqlite/db';
 import { feeds } from '@rss/infrastructure-sqlite/schema';
 import { eq, inArray } from 'drizzle-orm';
+import type { SqliteRemoteDatabase } from 'drizzle-orm/sqlite-proxy';
 import { DateTime, Effect, Layer, Option } from 'effect';
 
-type Client = ReturnType<typeof createClient>;
-type DbFeed = typeof feeds.$inferSelect;
+type DbFeed = {
+  createdAt: string;
+  data: Record<string, unknown> | null;
+  description: string;
+  id: string;
+  link: string;
+  title: string;
+  updatedAt: string;
+  userId: string;
+};
 
 const toFeed = (row: DbFeed): Feed => ({
   createdAt: DateTime.unsafeMake(new Date(row.createdAt)),
@@ -23,6 +32,7 @@ const toFeed = (row: DbFeed): Feed => ({
 const fromFeed = (feed: Feed) => {
   const { title, description, link, ...extraData } = feed.data;
   const iso = new Date(feed.createdAt.epochMillis).toISOString();
+
   return {
     createdAt: iso,
     data: extraData as Record<string, unknown>,
@@ -35,42 +45,33 @@ const fromFeed = (feed: Feed) => {
   };
 };
 
-const makeCreate =
-  (db: Client) =>
-  (feed: Feed): Effect.Effect<Feed, AppError> =>
-    Effect.try({
-      catch: (error) => new AppError({ code: 'INTERNAL_ERROR', message: String(error) }),
-      try: () => {
-        db.insert(feeds).values(fromFeed(feed)).run();
-        return feed;
-      },
-    });
+const handleError = (error: unknown) =>
+  new AppError({ code: 'INTERNAL_ERROR', message: String(error) });
 
-const makeFindById =
-  (db: Client) =>
-  (id: FeedId): Effect.Effect<Option.Option<Feed>, AppError> =>
-    Effect.sync(() => {
-      const row = db.select().from(feeds).where(eq(feeds.id, id)).get();
-      if (row) {
-        return Option.some(toFeed(row));
-      }
-      return Option.none();
-    });
+const makeCreate = (db: SqliteRemoteDatabase) => (feed: Feed) =>
+  Effect.gen(function* () {
+    yield* db.insert(feeds).values(fromFeed(feed));
+    return feed;
+  }).pipe(Effect.catchAll(handleError));
 
-const makeFindByUserId =
-  (db: Client) =>
-  (userId: UserId): Effect.Effect<ReadonlyArray<Feed>, AppError> =>
-    Effect.sync(() => db.select().from(feeds).where(eq(feeds.userId, userId)).all().map(toFeed));
+const makeDelete = (db: SqliteRemoteDatabase) => (ids: ReadonlyArray<FeedId>) =>
+  Effect.gen(function* () {
+    yield* db.delete(feeds).where(inArray(feeds.id, [...ids]));
+  }).pipe(Effect.catchAll(handleError));
 
-const findExisting = ({ db, id }: { db: Client; id: FeedId }): DbFeed => {
-  const existing = db.select().from(feeds).where(eq(feeds.id, id)).get();
-  if (!existing) {
-    throw new Error('Feed not found');
-  }
-  return existing;
-};
+const makeFindById = (db: SqliteRemoteDatabase) => (id: FeedId) =>
+  Effect.gen(function* () {
+    const rows = yield* db.select().from(feeds).where(eq(feeds.id, id));
+    return rows.length > 0 ? Option.some(toFeed(rows[0])) : Option.none();
+  }).pipe(Effect.catchAll(handleError));
 
-const buildUpdateSet = ({
+const makeFindByUserId = (db: SqliteRemoteDatabase) => (userId: UserId) =>
+  Effect.gen(function* () {
+    const rows = yield* db.select().from(feeds).where(eq(feeds.userId, userId));
+    return rows.map(toFeed);
+  }).pipe(Effect.catchAll(handleError));
+
+const mergeUpdateSet = ({
   existing,
   params,
 }: {
@@ -78,15 +79,8 @@ const buildUpdateSet = ({
   params: Partial<FeedData>;
 }): Record<string, unknown> => {
   const { title, description, link, ...extraParams } = params;
-  const mergedData = {
-    ...(existing.data as Record<string, unknown>),
-    ...extraParams,
-  };
-  const set: Record<string, unknown> = {
-    data: mergedData,
-    updatedAt: new Date().toISOString(),
-  };
-
+  const mergedData = { ...(existing.data as Record<string, unknown>), ...extraParams };
+  const set: Record<string, unknown> = { data: mergedData, updatedAt: new Date().toISOString() };
   if (title !== undefined) {
     set.title = title;
   }
@@ -96,53 +90,42 @@ const buildUpdateSet = ({
   if (link !== undefined) {
     set.link = (link as URL).toString();
   }
+
   return set;
 };
 
-const applyUpdate = ({
-  db,
-  id,
-  params,
-}: {
-  db: Client;
-  id: FeedId;
-  params: Partial<FeedData>;
-}): void => {
-  const existing = findExisting({ db, id });
-  const set = buildUpdateSet({ existing, params });
-  db.update(feeds).set(set).where(eq(feeds.id, id)).run();
-};
+const makeUpdate = (db: SqliteRemoteDatabase) => (id: FeedId) => (params: Partial<FeedData>) =>
+  Effect.gen(function* () {
+    const existing = yield* db.select().from(feeds).where(eq(feeds.id, id));
+    if (existing.length === 0) {
+      return yield* new AppError({ code: 'NOT_FOUND', message: 'Feed not found' });
+    }
+    yield* db
+      .update(feeds)
+      .set(mergeUpdateSet({ existing: existing[0], params }))
+      .where(eq(feeds.id, id));
+  }).pipe(
+    Effect.catchAll((error) => {
+      if (error instanceof AppError) {
+        return error;
+      }
 
-const makeUpdate =
-  (db: Client) =>
-  (id: FeedId): ((params: Partial<FeedData>) => Effect.Effect<void, AppError>) =>
-  (params) =>
-    Effect.try({
-      catch: (error) => new AppError({ code: 'INTERNAL_ERROR', message: String(error) }),
-      try: () => applyUpdate({ db, id, params }),
-    });
+      return handleError(error);
+    })
+  );
 
-const makeDelete =
-  (db: Client) =>
-  (ids: ReadonlyArray<FeedId>): Effect.Effect<void, AppError> =>
-    Effect.sync(() => {
-      db.delete(feeds)
-        .where(inArray(feeds.id, [...ids]))
-        .run();
-    });
+export const createFeedRepository = (db: SqliteRemoteDatabase): IFeedRepository => ({
+  create: makeCreate(db),
+  delete: makeDelete(db),
+  findById: makeFindById(db),
+  findByUserId: makeFindByUserId(db),
+  update: makeUpdate(db),
+});
 
-export const createFeedRepository = (dbOrPath?: Client | string): IFeedRepository => {
-  const db =
-    dbOrPath === undefined || typeof dbOrPath === 'string' ? createClient(dbOrPath) : dbOrPath;
-
-  return {
-    create: makeCreate(db),
-    delete: makeDelete(db),
-    findById: makeFindById(db),
-    findByUserId: makeFindByUserId(db),
-    update: makeUpdate(db),
-  };
-};
-
-export const SqliteFeedRepositoryLayer = (dbPath?: string) =>
-  Layer.sync(FeedRepository, () => createFeedRepository(dbPath));
+export const FeedRepositoryLive = Layer.effect(
+  FeedRepository,
+  Effect.gen(function* () {
+    const db = yield* SqliteDrizzle.SqliteDrizzle;
+    return createFeedRepository(db);
+  })
+);

@@ -1,14 +1,17 @@
 {
   "dependencies": {
-    "better-sqlite3": "^12.11.0",
-    "drizzle-orm": "^0.45.0"
+    "@effect/experimental": "^0.60.0",
+    "@effect/platform": "^0.96.0",
+    "@effect/sql": "^0.51.0",
+    "@effect/sql-drizzle": "^0.50.0",
+    "@effect/sql-sqlite-node": "^0.52.0",
+    "drizzle-orm": "^0.45.0",
+    "effect": "catalog:"
   },
   "devDependencies": {
     "@effect/vitest": "catalog:",
-    "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^22.0.0",
     "drizzle-kit": "^0.31.0",
-    "effect": "catalog:",
     "vitest": "catalog:"
   },
   "exports": {
@@ -19,8 +22,6 @@
   "private": true,
   "scripts": {
     "check": "tsc --noEmit && biome check --fix",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "test": "vitest run"

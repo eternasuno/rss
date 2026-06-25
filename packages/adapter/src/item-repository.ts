@@ -1,12 +1,18 @@
+import * as SqliteDrizzle from '@effect/sql-drizzle/Sqlite';
 import { FeedId, type Item, type ItemData, ItemId } from '@rss/core/entity';
 import { AppError, type IItemRepository, ItemRepository } from '@rss/core/port';
-import { createClient } from '@rss/infrastructure-sqlite/db';
 import { items } from '@rss/infrastructure-sqlite/schema';
 import { eq, inArray } from 'drizzle-orm';
+import type { SqliteRemoteDatabase } from 'drizzle-orm/sqlite-proxy';
 import { DateTime, Effect, Layer, Option } from 'effect';
 
-type Client = ReturnType<typeof createClient>;
-type DbItem = typeof items.$inferSelect;
+type DbItem = {
+  createdAt: string;
+  data: Record<string, unknown> | null;
+  feedId: string;
+  id: string;
+  title: string;
+};
 
 const toItem = (row: DbItem): Item => ({
   createdAt: DateTime.unsafeMake(new Date(row.createdAt)),
@@ -21,7 +27,6 @@ const toItem = (row: DbItem): Item => ({
 const fromItem = (item: Item) => {
   const { title, ...extraData } = item.data;
   const iso = new Date(item.createdAt.epochMillis).toISOString();
-
   return {
     createdAt: iso,
     data: extraData as Record<string, unknown>,
@@ -31,55 +36,43 @@ const fromItem = (item: Item) => {
   };
 };
 
-const makeCreate =
-  (db: Client) =>
-  (item: Item): Effect.Effect<Item, AppError> =>
-    Effect.try({
-      catch: (error) => new AppError({ code: 'INTERNAL_ERROR', message: String(error) }),
-      try: () => {
-        db.insert(items).values(fromItem(item)).run();
-        return item;
-      },
-    });
+const handleError = (error: unknown) =>
+  new AppError({ code: 'INTERNAL_ERROR', message: String(error) });
 
-const makeFindById =
-  (db: Client) =>
-  (id: ItemId): Effect.Effect<Option.Option<Item>, AppError> =>
-    Effect.sync(() => {
-      const row = db.select().from(items).where(eq(items.id, id)).get();
+const makeCreate = (db: SqliteRemoteDatabase) => (item: Item) =>
+  Effect.gen(function* () {
+    yield* db.insert(items).values(fromItem(item));
+    return item;
+  }).pipe(Effect.catchAll(handleError));
 
-      if (row) {
-        return Option.some(toItem(row));
-      }
+const makeDelete = (db: SqliteRemoteDatabase) => (ids: ReadonlyArray<ItemId>) =>
+  Effect.gen(function* () {
+    yield* db.delete(items).where(inArray(items.id, [...ids]));
+  }).pipe(Effect.catchAll(handleError));
 
-      return Option.none();
-    });
+const makeFindByFeedId = (db: SqliteRemoteDatabase) => (feedId: FeedId) =>
+  Effect.gen(function* () {
+    const rows = yield* db.select().from(items).where(eq(items.feedId, feedId));
+    return rows.map(toItem);
+  }).pipe(Effect.catchAll(handleError));
 
-const makeFindByFeedId =
-  (db: Client) =>
-  (feedId: FeedId): Effect.Effect<ReadonlyArray<Item>, AppError> =>
-    Effect.sync(() => db.select().from(items).where(eq(items.feedId, feedId)).all().map(toItem));
+const makeFindById = (db: SqliteRemoteDatabase) => (id: ItemId) =>
+  Effect.gen(function* () {
+    const rows = yield* db.select().from(items).where(eq(items.id, id));
+    return rows.length > 0 ? Option.some(toItem(rows[0])) : Option.none();
+  }).pipe(Effect.catchAll(handleError));
 
-const makeDelete =
-  (db: Client) =>
-  (ids: ReadonlyArray<ItemId>): Effect.Effect<void, AppError> =>
-    Effect.sync(() => {
-      db.delete(items)
-        .where(inArray(items.id, [...ids]))
-        .run();
-    });
+export const createItemRepository = (db: SqliteRemoteDatabase): IItemRepository => ({
+  create: makeCreate(db),
+  delete: makeDelete(db),
+  findByFeedId: makeFindByFeedId(db),
+  findById: makeFindById(db),
+});
 
-export const createItemRepository = (dbOrPath?: Client | string): IItemRepository => {
-  const db =
-    dbOrPath === undefined || typeof dbOrPath === 'string' ? createClient(dbOrPath) : dbOrPath;
-
-  return {
-    create: makeCreate(db),
-    delete: makeDelete(db),
-    findByFeedId: makeFindByFeedId(db),
-    findById: makeFindById(db),
-  };
-};
-
-export const SqliteItemRepositoryLayer = (dbPath?: string) =>
-  Layer.sync(ItemRepository, () => createItemRepository(dbPath));
+export const ItemRepositoryLive = Layer.effect(
+  ItemRepository,
+  Effect.gen(function* () {
+    const db = yield* SqliteDrizzle.SqliteDrizzle;
+    return createItemRepository(db);
+  })
+);
