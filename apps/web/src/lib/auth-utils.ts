@@ -1,73 +1,28 @@
 import { createServerFn } from '@tanstack/solid-start';
-import { getRequestHeaders } from '@tanstack/solid-start/server';
+import { Layer, ManagedRuntime } from 'effect';
+import { getAuth } from './auth';
 
 export const getSession = createServerFn({ method: 'GET' }).handler(async () => {
-  const headers = getRequestHeaders();
-  const { auth } = await import('./auth');
-  const session = await auth.api.getSession({ headers });
+  const auth = await getAuth();
+  const { getRequestHeaders } = await import('@tanstack/solid-start/server');
 
-  return session;
+  return auth.api.getSession({
+    headers: new Headers(getRequestHeaders()),
+  });
 });
 
 export const checkHasUsers = createServerFn({ method: 'GET' }).handler(async () => {
-  const { count } = await import('drizzle-orm');
-  const { db, user } = await import('./db');
-  const rows = await db.select({ count: count() }).from(user);
+  const { DB } = await import('@rss/infrastructure-sqlite/db');
+  const { user } = await import('@rss/infrastructure-sqlite/schema');
+  // @ts-expect-error - resolved at runtime via workspace dependency
+  const { sql } = await import('drizzle-orm');
 
-  return rows[0].count > 0;
+  const runtime = ManagedRuntime.make(
+    Layer.mergeAll(DB.Default) as unknown as Layer.Layer<unknown, unknown, never>,
+  );
+
+  const db = await runtime.runPromise(DB);
+  const result = await db.select({ count: sql<number>`count(*)` }).from(user);
+
+  return Number(result[0].count) > 0;
 });
-
-/**
- * Verify an API key and return the owning user's ID.
- * Works around a TypeScript definition gap: better-auth's verifyApiKey
- * response type omits `referenceId` on the returned key object, but the field
- * is present at runtime.
- */
-export const getUserIdFromApiKey = async (apiKey: string): Promise<string | null> => {
-  const { auth } = await import('./auth');
-  const result = await auth.api.verifyApiKey({ body: { key: apiKey } });
-  if (!result.valid || !result.key) return null;
-  const key = result.key as unknown as { referenceId: string };
-  return key.referenceId;
-};
-
-export type ApiKeyData = {
-  id: string;
-  name: string;
-  createdAt: Date;
-};
-
-export const listApiKeysFn = createServerFn({ method: 'GET' }).handler(async () => {
-  const headers = getRequestHeaders();
-  const { auth } = await import('./auth');
-  const session = await auth.api.getSession({ headers });
-  if (!session?.user) throw new Error('Unauthorized');
-
-  const result = await auth.api.listApiKeys({ headers });
-
-  return (result.apiKeys ?? []) as unknown as ApiKeyData[];
-});
-
-export const createApiKeyFn = createServerFn({ method: 'POST' })
-  .validator((d: { name: string }) => d)
-  .handler(async ({ data: { name } }) => {
-    const headers = getRequestHeaders();
-    const { auth } = await import('./auth');
-    const session = await auth.api.getSession({ headers });
-    if (!session?.user) throw new Error('Unauthorized');
-
-    return await auth.api.createApiKey({ headers, body: { name } });
-  });
-
-export const deleteApiKeyFn = createServerFn({ method: 'POST' })
-  .validator((d: { keyId: string }) => d)
-  .handler(async ({ data: { keyId } }) => {
-    const headers = getRequestHeaders();
-    const { auth } = await import('./auth');
-    const session = await auth.api.getSession({ headers });
-    if (!session?.user) throw new Error('Unauthorized');
-
-    await auth.api.deleteApiKey({ headers, body: { keyId } });
-
-    return { success: true };
-  });

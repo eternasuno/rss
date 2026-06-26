@@ -1,33 +1,29 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/solid-router';
-import * as Solid from 'solid-js';
 import { HydrationScript } from 'solid-js/web';
-
-const RootDocument = (props: { children: Solid.JSX.Element }) => (
-  <html>
-    <head>
-      <HydrationScript />
-      <HeadContent />
-    </head>
-    <body>
-      <Solid.Suspense>{props.children}</Solid.Suspense>
-      <Scripts />
-    </body>
-  </html>
-);
-
-const RootComponent = () => (
-  <RootDocument>
-    <Outlet />
-  </RootDocument>
-);
+import '../global.css';
 
 export const Route = createRootRoute({
-  component: RootComponent,
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
-      { content: 'width=device-width, initial-scale=1', name: 'viewport' },
-      { title: 'RSS Feed Manager' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
     ],
+    title: 'RSS Feed Manager',
   }),
+  component: RootComponent,
 });
+
+function RootComponent() {
+  return (
+    <html lang="en">
+      <head>
+        <HydrationScript />
+      </head>
+      <body>
+        <HeadContent />
+        <Outlet />
+        <Scripts />
+      </body>
+    </html>
+  );
+}

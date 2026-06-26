@@ -1,20 +1,15 @@
 import { createFileRoute, redirect, useRouter } from '@tanstack/solid-router';
-import { createSignal } from 'solid-js';
-import { authClient } from '../lib/auth-client';
-import { checkHasUsers } from '../lib/auth-utils';
+import { Show, createSignal, Suspense } from 'solid-js';
+import { authClient } from '~/lib/auth-client';
 
 export const Route = createFileRoute('/login')({
-  beforeLoad: async () => {
-    const hasUsers = await checkHasUsers();
-    if (!hasUsers) {
-      throw redirect({ to: '/register' });
-    }
-  },
-  component: LoginPage,
+  component: Login,
 });
 
-const LoginPage = () => {
+function Login() {
+  const session = authClient.useSession();
   const router = useRouter();
+
   const [email, setEmail] = createSignal('');
   const [password, setPassword] = createSignal('');
   const [error, setError] = createSignal('');
@@ -22,114 +17,97 @@ const LoginPage = () => {
 
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setLoading(true);
 
-    const { error: signInError } = await authClient.signIn.email({
+    const result = await authClient.signIn.email({
       email: email(),
       password: password(),
     });
 
-    if (signInError) {
-      setError(signInError.message || 'Login failed');
-      setLoading(false);
+    setLoading(false);
+
+    if (result.error) {
+      setError(result.error.message || 'Sign in failed');
+
       return;
     }
 
-    router.navigate({ to: '/admin' });
+    router.invalidate();
+    throw redirect({ to: '/' });
   };
 
   return (
-    <div style={{ margin: '100px auto', maxWidth: '400px', padding: '24px' }}>
-      <h1
-        style={{ 'font-size': '24px', 'font-weight': 'bold', 'margin-bottom': '24px' }}
-      >
-        RSS Feed Manager
-      </h1>
-
-      <form onSubmit={handleSubmit}>
-        <div style={{ 'margin-bottom': '16px' }}>
-          <label
-            for="email"
-            style={{ display: 'block', 'font-weight': '500', 'margin-bottom': '4px' }}
+    <div style={{ 'max-width': '400px', margin: '4rem auto', padding: '0 1rem' }}>
+      <Suspense fallback={<p>Loading...</p>}>
+        <Show when={!session()}>
+          <h1>Sign In</h1>
+          <form
+            onSubmit={handleSubmit}
+            style={{ display: 'flex', 'flex-direction': 'column', gap: '1rem' }}
           >
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email()}
-            onInput={(e) => setEmail(e.currentTarget.value)}
-            style={{
-              border: '1px solid #d1d5db',
-              'border-radius': '6px',
-              'box-sizing': 'border-box',
-              'font-size': '16px',
-              padding: '8px 12px',
-              width: '100%',
-            }}
-            required
-          />
-        </div>
-
-        <div style={{ 'margin-bottom': '24px' }}>
-          <label
-            for="password"
-            style={{ display: 'block', 'font-weight': '500', 'margin-bottom': '4px' }}
-          >
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password()}
-            onInput={(e) => setPassword(e.currentTarget.value)}
-            style={{
-              border: '1px solid #d1d5db',
-              'border-radius': '6px',
-              'box-sizing': 'border-box',
-              'font-size': '16px',
-              padding: '8px 12px',
-              width: '100%',
-            }}
-            required
-          />
-        </div>
-
-        {error() && (
-          <div
-            style={{
-              background: '#fef2f2',
-              'border-radius': '6px',
-              color: '#dc2626',
-              'font-size': '14px',
-              'margin-bottom': '16px',
-              padding: '8px 12px',
-            }}
-          >
-            {error()}
-          </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading()}
-          style={{
-            background: '#2563eb',
-            border: 'none',
-            'border-radius': '6px',
-            color: 'white',
-            cursor: loading() ? 'not-allowed' : 'pointer',
-            'font-size': '16px',
-            'font-weight': '500',
-            opacity: loading() ? 0.7 : 1,
-            padding: '10px 16px',
-            width: '100%',
-          }}
-        >
-          {loading() ? 'Signing In...' : 'Sign In'}
-        </button>
-      </form>
+            <div>
+              <label for="email" style={{ display: 'block', 'margin-bottom': '0.25rem', 'font-weight': 600 }}>
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email()}
+                onInput={(e) => setEmail(e.currentTarget.value)}
+                required
+                style={{
+                  border: '1px solid var(--color-border)',
+                  padding: '0.5rem',
+                  'border-radius': 'var(--radius)',
+                  width: '100%',
+                }}
+              />
+            </div>
+            <div>
+              <label for="password" style={{ display: 'block', 'margin-bottom': '0.25rem', 'font-weight': 600 }}>
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password()}
+                onInput={(e) => setPassword(e.currentTarget.value)}
+                required
+                style={{
+                  border: '1px solid var(--color-border)',
+                  padding: '0.5rem',
+                  'border-radius': 'var(--radius)',
+                  width: '100%',
+                }}
+              />
+            </div>
+            <Show when={error()}>
+              <p style={{ color: 'var(--color-error)', 'font-size': '0.875rem', margin: 0 }}>
+                {error()}
+              </p>
+            </Show>
+            <button
+              type="submit"
+              disabled={loading()}
+              style={{
+                background: 'var(--color-primary)',
+                color: '#fff',
+                border: 'none',
+                padding: '0.6rem 1rem',
+                'border-radius': 'var(--radius)',
+                cursor: loading() ? 'not-allowed' : 'pointer',
+                opacity: loading() ? 0.7 : 1,
+              }}
+            >
+              {loading() ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+          <p style={{ 'margin-top': '1rem', 'font-size': '0.875rem' }}>
+            Don&apos;t have an account? <a href="/register">Register</a>
+          </p>
+        </Show>
+      </Suspense>
     </div>
   );
-};
+}

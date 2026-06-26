@@ -76,20 +76,42 @@ packages/core/src/
     └── get-feed.ts
 ```
 
-### Adapter Layer (`packages/infra-*` or `apps/web/src/adapter/`) — TODO
+### Adapter Layer (`packages/adapter/src/`) — DONE
 
 | Adapter | Implements | Technology |
 |---------|-----------|------------|
-| SqliteFeedRepository | FeedRepository | Drizzle + better-sqlite3 |
-| SqliteItemRepository | ItemRepository | Drizzle + better-sqlite3 |
-| FeedsmithGenerator | FeedGenerator | feedsmith (lenient mode) |
+| UUID Crypto | Crypto (core/port) | node:crypto |
+| FeedsmithGenerator | FeedGenerator (core/port) | feedsmith (lenient mode) |
+| FeedRepository | FeedRepository (core/port) | @effect/sql-drizzle + @effect/sql-sqlite-node |
+| ItemRepository | ItemRepository (core/port) | @effect/sql-drizzle + @effect/sql-sqlite-node |
 
-### Gateway Layer (`apps/web/src/gateway/`) — TODO
+### Database Schema (`packages/infrastructure-sqlite/src/schema.ts`)
+
+All tables defined in one file — both app and better-auth tables:
+
+| Table | Purpose |
+|-------|---------|
+| `feeds` | RSS feed definitions |
+| `items` | Feed items |
+| `user`, `session`, `account`, `verification` | BetterAuth auth |
+| `api_key` | BetterAuth API key plugin (v1.5+: uses `referenceId`, `configId`) |
+
+Run `pnpm -w run db:push` to create/update all tables in `apps/web/data/rss.db`.
+
+### Gateway Layer (`apps/web/src/routes/`) — DONE
 
 TanStack Start routes and server functions that only do HTTP orchestration:
-- Call usecases (no business logic)
-- Wire adapters via Effect's Runtime
-- Format HTTP responses
+- Call usecases via `AppRuntime.runPromise()` (Effect ManagedRuntime)
+- Wire adapters via Effect's runtime
+- Auth via better-auth
+
+### Auth Architecture
+
+- **Server**: `apps/web/src/lib/auth.ts` — betterAuth() instance with Drizzle adapter + API key plugin + TanStack Start cookies
+- **Client**: `apps/web/src/lib/auth-client.ts` — createAuthClient() for browser-side auth calls
+- **Auth API**: `apps/web/src/routes/api/auth.$.tsx` — TanStack Start route catching `/api/auth/*` with server handlers
+- **Auth utilities**: `apps/web/src/lib/auth-utils.ts` — server functions (getSession, checkHasUsers, API key CRUD) use `await import()` for server-only deps to prevent client bundle leaks
+- **API key plugin**: Uses `@better-auth/api-key` with schema key `apikey` (lowercase) and `referenceId` field (v1.5+)
 
 ## Future Pipeline
 
@@ -113,7 +135,8 @@ Source URL → Cron poller → Content extractor → AI processor → structured
 
 ```
 DATABASE_URL=./data/rss.db
-SESSION_SECRET=change-me-to-a-32-char-random-string
+BETTER_AUTH_SECRET=change-me-to-a-32-char-random-string
+BETTER_AUTH_URL=http://localhost:5100
 ```
 
 ## Commands
@@ -125,8 +148,8 @@ SESSION_SECRET=change-me-to-a-32-char-random-string
 | `pnpm test` | root | Run all tests |
 | `pnpm run test` | packages/core | Run core tests |
 | `pnpm run test:watch` | packages/core | Watch mode |
-| `pnpm run db:generate` | apps/web | Generate Drizzle migrations |
-| `pnpm run db:migrate` | apps/web | Apply migrations |
+| `pnpm run db:generate` | packages/infrastructure-sqlite | Generate Drizzle migrations |
+| `pnpm run db:push` | root (`pnpm -w`) | Create/update SQLite tables in `apps/web/data/rss.db` |
 
 ## Tech Stack
 
@@ -136,7 +159,7 @@ SESSION_SECRET=change-me-to-a-32-char-random-string
 | Schema & Validation | Effect Schema (imported from `effect`) |
 | Full-stack framework | TanStack Start + SolidJS |
 | Build tool | Vite 7 |
-| Database | SQLite (Drizzle ORM + better-sqlite3) |
+| Database | SQLite (Drizzle ORM + @effect/sql-sqlite-node) |
 | RSS generation | feedsmith |
 | Monorepo | pnpm 11 + Turborepo |
 | Lint/Format | Biome |

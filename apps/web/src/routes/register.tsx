@@ -1,180 +1,166 @@
 import { createFileRoute, redirect, useRouter } from '@tanstack/solid-router';
-import { createSignal, onMount } from 'solid-js';
-import { authClient } from '../lib/auth-client';
-import { checkHasUsers } from '../lib/auth-utils';
+import { Show, createSignal, createResource, Suspense } from 'solid-js';
+import { authClient } from '~/lib/auth-client';
+import { checkHasUsers } from '~/lib/auth-utils';
 
 export const Route = createFileRoute('/register')({
-  beforeLoad: async () => {
-    const hasUsers = await checkHasUsers();
-    if (hasUsers) {
-      throw redirect({ to: '/login' });
-    }
-  },
-  component: RegisterPage,
+  component: Register,
 });
 
-const RegisterPage = () => {
+function Register() {
+  const session = authClient.useSession();
   const router = useRouter();
+
   const [name, setName] = createSignal('');
   const [email, setEmail] = createSignal('');
   const [password, setPassword] = createSignal('');
   const [error, setError] = createSignal('');
   const [loading, setLoading] = createSignal(false);
 
-  // Double-check no users exist on mount
-  onMount(async () => {
-    const hasUsers = await checkHasUsers();
-    if (hasUsers) {
-      router.navigate({ to: '/login' });
-    }
-  });
+  const [hasUsers] = createResource(() => checkHasUsers());
 
-  const handleRegister = async (e: Event) => {
+  const handleSubmit = async (e: Event) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setLoading(true);
 
-    // Server-side check already in beforeLoad, but verify again
-    const hasUsers = await checkHasUsers();
-    if (hasUsers) {
-      setError('Setup already completed');
-      setLoading(false);
-      return;
-    }
-
-    const { error: signUpError } = await authClient.signUp.email({
+    const result = await authClient.signUp.email({
       email: email(),
-      password: password(),
       name: name(),
+      password: password(),
     });
 
-    if (signUpError) {
-      setError(signUpError.message || 'Registration failed');
-      setLoading(false);
+    setLoading(false);
+
+    if (result.error) {
+      setError(result.error.message || 'Registration failed');
+
       return;
     }
 
-    router.navigate({ to: '/admin' });
+    router.invalidate();
+    throw redirect({ to: '/' });
   };
 
   return (
-    <div style={{ margin: '100px auto', maxWidth: '400px', padding: '24px' }}>
-      <h1
-        style={{ 'font-size': '24px', 'font-weight': 'bold', 'margin-bottom': '24px' }}
-      >
-        Set Up RSS Feed Manager
-      </h1>
-      <p style={{ 'margin-bottom': '24px', color: '#6b7280' }}>
-        Create the first admin account. Only one registration is allowed.
-      </p>
-
-      <form onSubmit={handleRegister}>
-        <div style={{ 'margin-bottom': '16px' }}>
-          <label
-            for="name"
-            style={{ display: 'block', 'font-weight': '500', 'margin-bottom': '4px' }}
-          >
-            Name
-          </label>
-          <input
-            id="name"
-            type="text"
-            value={name()}
-            onInput={(e) => setName(e.currentTarget.value)}
-            style={{
-              border: '1px solid #d1d5db',
-              'border-radius': '6px',
-              'box-sizing': 'border-box',
-              'font-size': '16px',
-              padding: '8px 12px',
-              width: '100%',
-            }}
-            required
-          />
-        </div>
-
-        <div style={{ 'margin-bottom': '16px' }}>
-          <label
-            for="email"
-            style={{ display: 'block', 'font-weight': '500', 'margin-bottom': '4px' }}
-          >
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email()}
-            onInput={(e) => setEmail(e.currentTarget.value)}
-            style={{
-              border: '1px solid #d1d5db',
-              'border-radius': '6px',
-              'box-sizing': 'border-box',
-              'font-size': '16px',
-              padding: '8px 12px',
-              width: '100%',
-            }}
-            required
-          />
-        </div>
-
-        <div style={{ 'margin-bottom': '24px' }}>
-          <label
-            for="password"
-            style={{ display: 'block', 'font-weight': '500', 'margin-bottom': '4px' }}
-          >
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password()}
-            onInput={(e) => setPassword(e.currentTarget.value)}
-            style={{
-              border: '1px solid #d1d5db',
-              'border-radius': '6px',
-              'box-sizing': 'border-box',
-              'font-size': '16px',
-              padding: '8px 12px',
-              width: '100%',
-            }}
-            required
-          />
-        </div>
-
-        {error() && (
-          <div
-            style={{
-              background: '#fef2f2',
-              'border-radius': '6px',
-              color: '#dc2626',
-              'font-size': '14px',
-              'margin-bottom': '16px',
-              padding: '8px 12px',
-            }}
-          >
-            {error()}
-          </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading()}
-          style={{
-            background: '#2563eb',
-            border: 'none',
-            'border-radius': '6px',
-            color: 'white',
-            cursor: loading() ? 'not-allowed' : 'pointer',
-            'font-size': '16px',
-            'font-weight': '500',
-            opacity: loading() ? 0.7 : 1,
-            padding: '10px 16px',
-            width: '100%',
-          }}
-        >
-          {loading() ? 'Creating Account...' : 'Create Account'}
-        </button>
-      </form>
+    <div style={{ 'max-width': '400px', margin: '4rem auto', padding: '0 1rem' }}>
+      <Suspense fallback={<p>Loading...</p>}>
+        <Show when={!session()}>
+          <h1>Register</h1>
+          <Suspense fallback={<p>Checking registration status...</p>}>
+            <Show
+              when={hasUsers() !== undefined}
+            >
+              <Show
+                when={!hasUsers()}
+                fallback={
+                  <div>
+                    <p style={{ color: 'var(--color-muted)' }}>
+                      Registration is closed. Only one user account is allowed.
+                    </p>
+                    <p>
+                      <a href="/login">Sign in instead</a>
+                    </p>
+                  </div>
+                }
+              >
+                <form
+                  onSubmit={handleSubmit}
+                  style={{ display: 'flex', 'flex-direction': 'column', gap: '1rem' }}
+                >
+                  <div>
+                    <label
+                      for="name"
+                      style={{ display: 'block', 'margin-bottom': '0.25rem', 'font-weight': 600 }}
+                    >
+                      Name
+                    </label>
+                    <input
+                      id="name"
+                      type="text"
+                      value={name()}
+                      onInput={(e) => setName(e.currentTarget.value)}
+                      required
+                      style={{
+                        border: '1px solid var(--color-border)',
+                        padding: '0.5rem',
+                        'border-radius': 'var(--radius)',
+                        width: '100%',
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      for="email"
+                      style={{ display: 'block', 'margin-bottom': '0.25rem', 'font-weight': 600 }}
+                    >
+                      Email
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      value={email()}
+                      onInput={(e) => setEmail(e.currentTarget.value)}
+                      required
+                      style={{
+                        border: '1px solid var(--color-border)',
+                        padding: '0.5rem',
+                        'border-radius': 'var(--radius)',
+                        width: '100%',
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      for="password"
+                      style={{ display: 'block', 'margin-bottom': '0.25rem', 'font-weight': 600 }}
+                    >
+                      Password
+                    </label>
+                    <input
+                      id="password"
+                      type="password"
+                      value={password()}
+                      onInput={(e) => setPassword(e.currentTarget.value)}
+                      required
+                      minLength={8}
+                      style={{
+                        border: '1px solid var(--color-border)',
+                        padding: '0.5rem',
+                        'border-radius': 'var(--radius)',
+                        width: '100%',
+                      }}
+                    />
+                  </div>
+                  <Show when={error()}>
+                    <p style={{ color: 'var(--color-error)', 'font-size': '0.875rem', margin: 0 }}>
+                      {error()}
+                    </p>
+                  </Show>
+                  <button
+                    type="submit"
+                    disabled={loading()}
+                    style={{
+                      background: 'var(--color-primary)',
+                      color: '#fff',
+                      border: 'none',
+                      padding: '0.6rem 1rem',
+                      'border-radius': 'var(--radius)',
+                      cursor: loading() ? 'not-allowed' : 'pointer',
+                      opacity: loading() ? 0.7 : 1,
+                    }}
+                  >
+                    {loading() ? 'Creating account...' : 'Create Account'}
+                  </button>
+                </form>
+              </Show>
+            </Show>
+          </Suspense>
+          <p style={{ 'margin-top': '1rem', 'font-size': '0.875rem' }}>
+            Already have an account? <a href="/login">Sign in</a>
+          </p>
+        </Show>
+      </Suspense>
     </div>
   );
-};
+}

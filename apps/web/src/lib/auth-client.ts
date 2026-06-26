@@ -1,6 +1,5 @@
-import { createAuthClient } from 'better-auth/client';
-import { apiKeyClient } from '@better-auth/api-key/client';
+import { createAuthClient } from 'better-auth/solid';
 
 export const authClient = createAuthClient({
-  plugins: [apiKeyClient()],
+  baseURL: 'http://localhost:5100',
 });
