@@ -12,12 +12,14 @@
     "vitest": "catalog:"
   },
   "exports": {
-    "./db": "./src/db.ts"
+    "./db": "./src/db.ts",
+    "./schema": "./src/schema.ts"
   },
   "name": "@rss/infrastructure-sqlite",
   "private": true,
   "scripts": {
     "check": "tsc --noEmit && biome check --fix",
+    "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "test": "vitest run"

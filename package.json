@@ -12,6 +12,8 @@
   "scripts": {
     "build": "turbo build",
     "check": "turbo check",
+    "db:push": "DATABASE_URL=../../apps/web/data/rss.db pnpm --filter @rss/infrastructure-sqlite db:push",
+    "db:generate": "DATABASE_URL=../../apps/web/data/rss.db pnpm --filter @rss/infrastructure-sqlite db:generate",
     "prepare": "effect-language-service patch",
     "test": "turbo test"
   },
