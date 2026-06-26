@@ -2,16 +2,16 @@ import { assert, it } from '@effect/vitest';
 import type { FeedData, FeedId, UserId } from '@rss/core/entity';
 import { FeedRepository } from '@rss/core/port';
 import { DB } from '@rss/infrastructure-sqlite/db';
-import { Effect, Layer, Option } from 'effect';
-import { makeFeed } from '../mock/feed';
-import { createTables, mockConfigProvider } from '../mock/tables';
+import { Effect, Function as Fn, Layer, Option } from 'effect';
 import { FeedRepositoryLive } from '../src/feed-repository';
+import { mockConfigProvider } from './mock/config';
+import { makeFeed } from './mock/feed';
+import { createTables } from './mock/tables';
 
-const provideTestLayers = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
-  effect.pipe(
-    Effect.provide(FeedRepositoryLive.pipe(Layer.provideMerge(DB.Default))),
-    Effect.withConfigProvider(mockConfigProvider)
-  );
+const provideTestLayers = Fn.flow(
+  Effect.provide(Layer.provideMerge(FeedRepositoryLive, DB.Default)),
+  Effect.withConfigProvider(mockConfigProvider)
+);
 
 it.effect('FeedRepository: creates and returns a feed', () =>
   Effect.gen(function* () {

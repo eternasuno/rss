@@ -3,9 +3,10 @@ import type { FeedId, ItemData, ItemId } from '@rss/core/entity';
 import { ItemRepository } from '@rss/core/port';
 import { DB } from '@rss/infrastructure-sqlite/db';
 import { Effect, Layer, Option } from 'effect';
-import { makeItem } from '../mock/item';
-import { createTables, mockConfigProvider } from '../mock/tables';
 import { ItemRepositoryLive } from '../src/item-repository';
+import { mockConfigProvider } from './mock/config';
+import { makeItem } from './mock/item';
+import { createTables } from './mock/tables';
 
 const provideTestLayers = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
   effect.pipe(

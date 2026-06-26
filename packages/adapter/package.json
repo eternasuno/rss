@@ -1,16 +1,13 @@
 {
   "dependencies": {
-    "@effect/sql-drizzle": "^0.50.0",
     "@rss/core": "workspace:*",
     "@rss/infrastructure-sqlite": "workspace:*",
-    "drizzle-orm": "^0.45.0",
+    "drizzle-orm": "catalog:",
     "effect": "catalog:",
     "feedsmith": "^2.9.0"
   },
   "devDependencies": {
-    "@effect/experimental": "^0.60.0",
-    "@effect/sql": "^0.51.0",
-    "@effect/sql-sqlite-node": "^0.52.0",
+    "@effect/sql": "catalog:",
     "@effect/vitest": "catalog:",
     "vitest": "catalog:"
   },

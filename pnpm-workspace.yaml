@@ -8,6 +8,8 @@ allowBuilds:
   msgpackr-extract: true
 
 catalog:
+  "@effect/sql": ^0.51.1
   "@effect/vitest": ^0.29.0
+  drizzle-orm: ^0.45.0
   effect: ^3.21.4
   vitest: ^3.2.0

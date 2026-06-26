@@ -1,12 +1,8 @@
+import type { SqlError } from '@effect/sql';
 import { DB } from '@rss/infrastructure-sqlite/db';
-import { ConfigProvider, Effect } from 'effect';
+import { Effect } from 'effect';
 
-export const mockConfigProvider = ConfigProvider.fromJson({
-  DATABASE_URL: ':memory:',
-});
-
-// biome-ignore lint/suspicious/noExplicitAny: test helper — internal SqlError/DB types aren't portable
-export const createTables: Effect.Effect<any, any, any> = Effect.gen(function* () {
+export const createTables: Effect.Effect<void, SqlError.SqlError, DB> = Effect.gen(function* () {
   const db = yield* DB;
 
   yield* db.run(
