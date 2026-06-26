@@ -72,15 +72,6 @@ export const verification = sqliteTable('verification', {
   updatedAt: integer('updated_at', { mode: 'timestamp_ms' }),
 });
 
-// Deprecated: old API key table — will be removed after migration to better-auth
-export const apiKeys = sqliteTable('api_keys', {
-  createdAt: text('created_at').notNull(),
-  expiresAt: text('expires_at'),
-  id: text('id').primaryKey(),
-  key: text('key').unique().notNull(),
-  userId: text('user_id').notNull(),
-});
-
 // API key table for better-auth API key plugin
 export const apiKey = sqliteTable('api_key', {
   id: text('id').primaryKey(),
