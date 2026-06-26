@@ -10,7 +10,6 @@ const AppLayer: Layer.Layer<unknown, unknown, never> = Layer.mergeAll(
   FeedsmithGeneratorLayer,
   FeedRepositoryLive,
   ItemRepositoryLive,
-  DB.Default,
-) as unknown as Layer.Layer<unknown, unknown, never>;
+).pipe(Layer.provideMerge(DB.Default)) as unknown as Layer.Layer<unknown, unknown, never>;
 
 export const AppRuntime = ManagedRuntime.make(AppLayer);

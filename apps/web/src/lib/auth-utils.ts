@@ -20,15 +20,15 @@ export const checkHasUsers = createServerFn({ method: 'GET' }).handler(async () 
 /**
  * Verify an API key and return the owning user's ID.
  * Works around a TypeScript definition gap: better-auth's verifyApiKey
- * response type omits `userId` on the returned key object, but the field
+ * response type omits `referenceId` on the returned key object, but the field
  * is present at runtime.
  */
 export const getUserIdFromApiKey = async (apiKey: string): Promise<string | null> => {
   const { auth } = await import('./auth');
   const result = await auth.api.verifyApiKey({ body: { key: apiKey } });
   if (!result.valid || !result.key) return null;
-  const key = result.key as unknown as { userId: string };
-  return key.userId;
+  const key = result.key as unknown as { referenceId: string };
+  return key.referenceId;
 };
 
 export type ApiKeyData = {

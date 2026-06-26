@@ -29,22 +29,22 @@ export const items = D.sqliteTable(
 // --- Better Auth tables ---
 
 export const user = D.sqliteTable('user', {
-  id: D.text('id').primaryKey(),
-  name: D.text('name').notNull(),
+  createdAt: D.integer('created_at', { mode: 'timestamp_ms' }).notNull(),
   email: D.text('email').notNull().unique(),
   emailVerified: D.integer('email_verified', { mode: 'boolean' }).notNull().default(false),
+  id: D.text('id').primaryKey(),
   image: D.text('image'),
-  createdAt: D.integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  name: D.text('name').notNull(),
   updatedAt: D.integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
 });
 
 export const session = D.sqliteTable('session', {
-  id: D.text('id').primaryKey(),
-  expiresAt: D.integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
-  token: D.text('token').notNull().unique(),
   createdAt: D.integer('created_at', { mode: 'timestamp_ms' }).notNull(),
-  updatedAt: D.integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+  expiresAt: D.integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
+  id: D.text('id').primaryKey(),
   ipAddress: D.text('ip_address'),
+  token: D.text('token').notNull().unique(),
+  updatedAt: D.integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
   userAgent: D.text('user_agent'),
   userId: D.text('user_id')
     .notNull()
@@ -52,50 +52,50 @@ export const session = D.sqliteTable('session', {
 });
 
 export const account = D.sqliteTable('account', {
-  id: D.text('id').primaryKey(),
+  accessToken: D.text('access_token'),
+  accessTokenExpiresAt: D.integer('access_token_expires_at', { mode: 'timestamp_ms' }),
   accountId: D.text('account_id').notNull(),
+  createdAt: D.integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  id: D.text('id').primaryKey(),
+  idToken: D.text('id_token'),
+  password: D.text('password'),
   providerId: D.text('provider_id').notNull(),
+  refreshToken: D.text('refresh_token'),
+  refreshTokenExpiresAt: D.integer('refresh_token_expires_at', { mode: 'timestamp_ms' }),
+  scope: D.text('scope'),
+  updatedAt: D.integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
   userId: D.text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
-  accessToken: D.text('access_token'),
-  refreshToken: D.text('refresh_token'),
-  idToken: D.text('id_token'),
-  accessTokenExpiresAt: D.integer('access_token_expires_at', { mode: 'timestamp_ms' }),
-  refreshTokenExpiresAt: D.integer('refresh_token_expires_at', { mode: 'timestamp_ms' }),
-  scope: D.text('scope'),
-  password: D.text('password'),
-  createdAt: D.integer('created_at', { mode: 'timestamp_ms' }).notNull(),
-  updatedAt: D.integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
 });
 
 export const verification = D.sqliteTable('verification', {
+  createdAt: D.integer('created_at', { mode: 'timestamp_ms' }),
+  expiresAt: D.integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
   id: D.text('id').primaryKey(),
   identifier: D.text('identifier').notNull(),
-  value: D.text('value').notNull(),
-  expiresAt: D.integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
-  createdAt: D.integer('created_at', { mode: 'timestamp_ms' }),
   updatedAt: D.integer('updated_at', { mode: 'timestamp_ms' }),
+  value: D.text('value').notNull(),
 });
 
 export const apiKey = D.sqliteTable('api_key', {
+  configId: D.text('config_id').notNull().default('default'),
+  createdAt: D.integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  enabled: D.integer('enabled', { mode: 'boolean' }).notNull().default(true),
+  expiresAt: D.integer('expires_at', { mode: 'timestamp_ms' }),
   id: D.text('id').primaryKey(),
-  name: D.text('name').notNull(),
   key: D.text('key').notNull().unique(),
-  userId: D.text('user_id')
+  metadata: D.text('metadata', { mode: 'json' }).$type<Record<string, unknown>>(),
+  name: D.text('name').notNull(),
+  permissions: D.text('permissions', { mode: 'json' }).$type<Record<string, string[]>>(),
+  rateLimitEnabled: D.integer('rate_limit_enabled', { mode: 'boolean' }),
+  rateLimitMax: D.integer('rate_limit_max'),
+  rateLimitTimeWindow: D.integer('rate_limit_time_window'),
+  referenceId: D.text('reference_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
-  organizationId: D.text('organization_id'),
-  enabled: D.integer('enabled', { mode: 'boolean' }).notNull().default(true),
-  remaining: D.integer('remaining'),
   refillAmount: D.integer('refill_amount'),
   refillInterval: D.integer('refill_interval'),
-  expiresAt: D.integer('expires_at', { mode: 'timestamp_ms' }),
-  createdAt: D.integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  remaining: D.integer('remaining'),
   updatedAt: D.integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
-  permissions: D.text('permissions', { mode: 'json' }).$type<Record<string, string[]>>(),
-  metadata: D.text('metadata', { mode: 'json' }).$type<Record<string, unknown>>(),
-  rateLimitEnabled: D.integer('rate_limit_enabled', { mode: 'boolean' }),
-  rateLimitTimeWindow: D.integer('rate_limit_time_window'),
-  rateLimitMax: D.integer('rate_limit_max'),
 });
