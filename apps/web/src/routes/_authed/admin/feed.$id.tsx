@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/solid-router';
 import { createResource, createSignal, For, Show } from 'solid-js';
-import { getFeedDetailFn, regenerateXmlFn } from '../../server/feeds';
+import { getFeedDetailFn, regenerateXmlFn } from '../../../server/feeds';
 
 export const Route = createFileRoute('/_authed/admin/feed/$id')({
   component: FeedDetailPage,
@@ -12,16 +12,7 @@ const FeedDetailPage = () => {
     () => params().id,
     (id) => getFeedDetailFn({ data: { id } })
   );
-  const [copied, setCopied] = createSignal(false);
   const [regenerating, setRegenerating] = createSignal(false);
-
-  const handleCopyApiKey = async () => {
-    const data = feedData();
-    if (!data?.apiKey) return;
-    await navigator.clipboard.writeText(data.apiKey);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   const handleRegenerate = async () => {
     setRegenerating(true);
@@ -38,17 +29,17 @@ const FeedDetailPage = () => {
       <Show when={feedData()}>
         {(data) => (
           <>
-            <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>
+            <h1 style={{ 'font-size': '24px', 'font-weight': 'bold', 'margin-bottom': '8px' }}>
               {data().feed.title}
             </h1>
-            <p style={{ color: '#6b7280', marginBottom: '32px' }}>{data().feed.description}</p>
+            <p style={{ color: '#6b7280', 'margin-bottom': '32px' }}>{data().feed.description}</p>
 
             <div
               style={{
                 display: 'grid',
                 gap: '16px',
-                gridTemplateColumns: '1fr 1fr',
-                marginBottom: '32px',
+                'grid-template-columns': '1fr 1fr',
+                'margin-bottom': '32px',
               }}
             >
               <InfoCard
@@ -58,9 +49,7 @@ const FeedDetailPage = () => {
               />
               <InfoCard
                 label="API Key"
-                value={data().apiKey || 'No key'}
-                onCopy={handleCopyApiKey}
-                copied={copied()}
+                value="Manage keys from admin dashboard"
               />
             </div>
 
@@ -80,9 +69,9 @@ const FeedDetailPage = () => {
                 style={{
                   background: '#f3f4f6',
                   border: '1px solid #d1d5db',
-                  borderRadius: '6px',
+                  'border-radius': '6px',
                   cursor: regenerating() ? 'not-allowed' : 'pointer',
-                  fontSize: '13px',
+                  'font-size': '13px',
                   padding: '6px 16px',
                 }}
               >
@@ -95,16 +84,16 @@ const FeedDetailPage = () => {
                 style={{
                   color: '#9ca3af',
                   padding: '48px 0',
-                  textAlign: 'center',
+                  'text-align': 'center',
                 }}
               >
-                <p style={{ fontSize: '16px', marginBottom: '8px' }}>No items yet</p>
-                <p style={{ fontSize: '14px' }}>
+                <p style={{ 'font-size': '16px', 'margin-bottom': '8px' }}>No items yet</p>
+                <p style={{ 'font-size': '14px' }}>
                   Add items via:{' '}
                   <code
                     style={{
                       background: '#f3f4f6',
-                      borderRadius: '4px',
+                      'border-radius': '4px',
                       padding: '2px 6px',
                     }}
                   >
@@ -114,25 +103,25 @@ const FeedDetailPage = () => {
               </div>
             </Show>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', 'flex-direction': 'column', gap: '8px' }}>
               <For each={data().items}>
                 {(item) => (
                   <div
                     style={{
                       border: '1px solid #e5e7eb',
-                      borderRadius: '8px',
+                      'border-radius': '8px',
                       padding: '12px 16px',
                     }}
                   >
                     <div
                       style={{
-                        alignItems: 'center',
+                        'align-items': 'center',
                         display: 'flex',
-                        justifyContent: 'space-between',
+                        'justify-content': 'space-between',
                       }}
                     >
-                      <span style={{ fontSize: '14px', fontWeight: '500' }}>{item.title}</span>
-                      <span style={{ color: '#9ca3af', fontSize: '12px' }}>
+                      <span style={{ 'font-size': '14px', 'font-weight': '500' }}>{item.title}</span>
+                      <span style={{ color: '#9ca3af', 'font-size': '12px' }}>
                         {new Date(item.createdAt).toLocaleDateString()}
                       </span>
                     </div>

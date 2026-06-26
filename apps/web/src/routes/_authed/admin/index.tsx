@@ -1,6 +1,7 @@
 import { createFileRoute, useRouter } from '@tanstack/solid-router';
 import { createResource, createSignal, For, Show } from 'solid-js';
-import { createFeedFn, listFeedsFn } from '../../server/feeds';
+import { createFeedFn, listFeedsFn } from '../../../server/feeds';
+import { listApiKeysFn, createApiKeyFn, deleteApiKeyFn } from '../../../lib/auth-utils';
 
 export const Route = createFileRoute('/_authed/admin/')({
   component: AdminPage,
@@ -14,7 +15,13 @@ const AdminPage = () => {
   const [link, setLink] = createSignal('');
   const [creating, setCreating] = createSignal(false);
   const [createError, setCreateError] = createSignal('');
-  const [showApiKey, setShowApiKey] = createSignal<string | null>(null);
+
+  // API key state
+  const [apiKeys, { refetch: refetchKeys }] = createResource(() => listApiKeysFn());
+  const [showKeys, setShowKeys] = createSignal(false);
+  const [keyName, setKeyName] = createSignal('');
+  const [creatingKey, setCreatingKey] = createSignal(false);
+  const [newKey, setNewKey] = createSignal<{ key: string; name: string } | null>(null);
 
   const handleCreate = async (e: Event) => {
     e.preventDefault();
@@ -28,7 +35,6 @@ const AdminPage = () => {
     });
 
     if (result.success && result.data) {
-      setShowApiKey(result.data.apiKey);
       setTitle('');
       setDescription('');
       setLink('');
@@ -39,59 +45,217 @@ const AdminPage = () => {
     setCreating(false);
   };
 
+  const handleCreateApiKey = async () => {
+    if (!keyName()) return;
+    setCreatingKey(true);
+    try {
+      const result = await createApiKeyFn({ data: { name: keyName() } });
+      if (result) {
+        setNewKey({ key: result.key ?? '', name: result.name ?? '' });
+        setKeyName('');
+        refetchKeys();
+      }
+    } catch {
+      // ignore
+    }
+    setCreatingKey(false);
+  };
+
+  const handleDeleteApiKey = async (keyId: string) => {
+    await deleteApiKeyFn({ data: { keyId } });
+    refetchKeys();
+  };
+
   return (
     <div>
-      <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>Feed Manager</h1>
-      <p style={{ color: '#6b7280', marginBottom: '32px' }}>Create and manage your RSS feeds</p>
+      <h1 style={{ 'font-size': '24px', 'font-weight': 'bold', 'margin-bottom': '8px' }}>
+        Feed Manager
+      </h1>
+      <p style={{ color: '#6b7280', 'margin-bottom': '32px' }}>
+        Create and manage your RSS feeds
+      </p>
 
-      <Show when={showApiKey()}>
-        <div
+      {/* API Key Section */}
+      <div
+        style={{
+          background: '#f9fafb',
+          border: '1px solid #e5e7eb',
+          'border-radius': '8px',
+          'margin-bottom': '24px',
+          padding: '16px',
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setShowKeys(!showKeys)}
           style={{
-            background: '#f0fdf4',
-            border: '1px solid #bbf7d0',
-            borderRadius: '8px',
-            marginBottom: '24px',
-            padding: '16px',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            'font-size': '16px',
+            'font-weight': '600',
+            padding: '0',
+            width: '100%',
+            'text-align': 'left',
           }}
         >
-          <p style={{ color: '#166534', fontWeight: 'bold', margin: '0 0 8px' }}>
-            Feed created! Your API Key:
-          </p>
-          <code
-            style={{
-              background: '#fff',
-              borderRadius: '4px',
-              display: 'block',
-              fontSize: '14px',
-              marginBottom: '8px',
-              padding: '8px 12px',
-              wordBreak: 'break-all',
-            }}
-          >
-            {showApiKey()}
-          </code>
-          <p style={{ color: '#6b7280', fontSize: '12px', margin: 0 }}>
-            Copy this key now. Use it in the X-API-Key header to add items.
-          </p>
-        </div>
-      </Show>
+          {showKeys() ? '▼' : '▶'} API Keys
+        </button>
 
+        <Show when={showKeys}>
+          <div style={{ 'margin-top': '16px' }}>
+            <Show when={newKey()}>
+              {(nk) => (
+                <div
+                  style={{
+                    background: '#f0fdf4',
+                    border: '1px solid #bbf7d0',
+                    'border-radius': '8px',
+                    'margin-bottom': '16px',
+                    padding: '16px',
+                  }}
+                >
+                  <p style={{ color: '#166534', 'font-weight': 'bold', margin: '0 0 8px' }}>
+                    API Key created: {nk().name}
+                  </p>
+                  <code
+                    style={{
+                      background: '#fff',
+                      'border-radius': '4px',
+                      display: 'block',
+                      'font-size': '14px',
+                      'margin-bottom': '8px',
+                      padding: '8px 12px',
+                      'word-break': 'break-all',
+                    }}
+                  >
+                    {nk().key}
+                  </code>
+                  <p style={{ color: '#6b7280', 'font-size': '12px', margin: 0 }}>
+                    Copy this key now. You won't be able to see it again.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setNewKey(null)}
+                    style={{
+                      background: '#fff',
+                      border: '1px solid #d1d5db',
+                      'border-radius': '4px',
+                      cursor: 'pointer',
+                      'font-size': '12px',
+                      'margin-top': '8px',
+                      padding: '4px 12px',
+                    }}
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
+            </Show>
+
+            {/* Create new key */}
+            <div style={{ display: 'flex', gap: '8px', 'margin-bottom': '12px' }}>
+              <input
+                type="text"
+                value={keyName()}
+                onInput={(e) => setKeyName(e.currentTarget.value)}
+                placeholder="Key name (e.g. Production)"
+                style={{
+                  border: '1px solid #d1d5db',
+                  'border-radius': '6px',
+                  'box-sizing': 'border-box',
+                  flex: 1,
+                  'font-size': '14px',
+                  padding: '8px 12px',
+                }}
+              />
+              <button
+                type="button"
+                disabled={creatingKey() || !keyName()}
+                onClick={handleCreateApiKey}
+                style={{
+                  background: '#2563eb',
+                  border: 'none',
+                  'border-radius': '6px',
+                  color: 'white',
+                  cursor: creatingKey() ? 'not-allowed' : 'pointer',
+                  'font-size': '14px',
+                  opacity: creatingKey() ? 0.7 : 1,
+                  padding: '8px 16px',
+                  'white-space': 'nowrap',
+                }}
+              >
+                {creatingKey() ? 'Creating...' : 'Create Key'}
+              </button>
+            </div>
+
+            {/* Key list */}
+            <Show when={apiKeys.loading}>
+              <p style={{ color: '#6b7280', 'font-size': '14px' }}>Loading keys...</p>
+            </Show>
+
+            <Show when={apiKeys()?.length === 0}>
+              <p style={{ color: '#9ca3af', 'font-size': '14px' }}>No API keys yet.</p>
+            </Show>
+
+            <For each={apiKeys()}>
+              {(key) => (
+                <div
+                  style={{
+                    display: 'flex',
+                    'align-items': 'center',
+                    'justify-content': 'space-between',
+                    padding: '8px 0',
+                    'border-bottom': '1px solid #e5e7eb',
+                  }}
+                >
+                  <div>
+                    <span style={{ 'font-size': '14px', 'font-weight': '500' }}>{key.name}</span>
+                    <span style={{ color: '#9ca3af', 'font-size': '12px', 'margin-left': '8px' }}>
+                      Created: {new Date(key.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteApiKey(key.id)}
+                    style={{
+                      background: '#fef2f2',
+                      border: '1px solid #fecaca',
+                      'border-radius': '4px',
+                      color: '#dc2626',
+                      cursor: 'pointer',
+                      'font-size': '12px',
+                      padding: '4px 12px',
+                    }}
+                  >
+                    Revoke
+                  </button>
+                </div>
+              )}
+            </For>
+          </div>
+        </Show>
+      </div>
+
+      {/* Create Feed Form */}
       <form
         onSubmit={handleCreate}
         style={{
           background: '#f9fafb',
           border: '1px solid #e5e7eb',
-          borderRadius: '8px',
-          marginBottom: '32px',
+          'border-radius': '8px',
+          'margin-bottom': '32px',
           padding: '20px',
         }}
       >
-        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Create Feed</h2>
+        <h2 style={{ 'font-size': '18px', 'font-weight': '600', 'margin-bottom': '16px' }}>
+          Create Feed
+        </h2>
 
-        <div style={{ marginBottom: '12px' }}>
+        <div style={{ 'margin-bottom': '12px' }}>
           <label
-            style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}
             for="title"
+            style={{ display: 'block', 'font-size': '14px', 'font-weight': '500', 'margin-bottom': '4px' }}
           >
             Title
           </label>
@@ -100,16 +264,23 @@ const AdminPage = () => {
             type="text"
             value={title()}
             onInput={(e) => setTitle(e.currentTarget.value)}
-            style={inputStyle}
+            style={{
+              border: '1px solid #d1d5db',
+              'border-radius': '6px',
+              'box-sizing': 'border-box',
+              'font-size': '14px',
+              padding: '8px 12px',
+              width: '100%',
+            }}
             placeholder="My Blog"
             required
           />
         </div>
 
-        <div style={{ marginBottom: '12px' }}>
+        <div style={{ 'margin-bottom': '12px' }}>
           <label
-            style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}
             for="description"
+            style={{ display: 'block', 'font-size': '14px', 'font-weight': '500', 'margin-bottom': '4px' }}
           >
             Description
           </label>
@@ -118,16 +289,23 @@ const AdminPage = () => {
             type="text"
             value={description()}
             onInput={(e) => setDescription(e.currentTarget.value)}
-            style={inputStyle}
+            style={{
+              border: '1px solid #d1d5db',
+              'border-radius': '6px',
+              'box-sizing': 'border-box',
+              'font-size': '14px',
+              padding: '8px 12px',
+              width: '100%',
+            }}
             placeholder="Latest posts from my blog"
             required
           />
         </div>
 
-        <div style={{ marginBottom: '12px' }}>
+        <div style={{ 'margin-bottom': '12px' }}>
           <label
-            style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}
             for="link"
+            style={{ display: 'block', 'font-size': '14px', 'font-weight': '500', 'margin-bottom': '4px' }}
           >
             Link
           </label>
@@ -136,7 +314,14 @@ const AdminPage = () => {
             type="url"
             value={link()}
             onInput={(e) => setLink(e.currentTarget.value)}
-            style={inputStyle}
+            style={{
+              border: '1px solid #d1d5db',
+              'border-radius': '6px',
+              'box-sizing': 'border-box',
+              'font-size': '14px',
+              padding: '8px 12px',
+              width: '100%',
+            }}
             placeholder="https://example.com"
             required
           />
@@ -146,10 +331,10 @@ const AdminPage = () => {
           <div
             style={{
               background: '#fef2f2',
-              borderRadius: '6px',
+              'border-radius': '6px',
               color: '#dc2626',
-              fontSize: '14px',
-              marginBottom: '12px',
+              'font-size': '14px',
+              'margin-bottom': '12px',
               padding: '8px 12px',
             }}
           >
@@ -163,11 +348,11 @@ const AdminPage = () => {
           style={{
             background: '#2563eb',
             border: 'none',
-            borderRadius: '6px',
+            'border-radius': '6px',
             color: 'white',
             cursor: creating() ? 'not-allowed' : 'pointer',
-            fontSize: '14px',
-            fontWeight: '500',
+            'font-size': '14px',
+            'font-weight': '500',
             opacity: creating() ? 0.7 : 1,
             padding: '8px 20px',
           }}
@@ -176,7 +361,7 @@ const AdminPage = () => {
         </button>
       </form>
 
-      <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Your Feeds</h2>
+      <h2 style={{ 'font-size': '18px', 'font-weight': '600', 'margin-bottom': '16px' }}>Your Feeds</h2>
 
       <Show when={feeds.loading}>
         <p style={{ color: '#6b7280' }}>Loading...</p>
@@ -186,13 +371,13 @@ const AdminPage = () => {
         <p style={{ color: '#9ca3af' }}>No feeds yet. Create your first one above.</p>
       </Show>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div style={{ display: 'flex', 'flex-direction': 'column', gap: '12px' }}>
         <For each={feeds()}>
           {(feed) => (
             <div
               style={{
                 border: '1px solid #e5e7eb',
-                borderRadius: '8px',
+                'border-radius': '8px',
                 cursor: 'pointer',
                 padding: '16px',
               }}
@@ -200,16 +385,16 @@ const AdminPage = () => {
             >
               <div
                 style={{
-                  alignItems: 'flex-start',
+                  'align-items': 'flex-start',
                   display: 'flex',
-                  justifyContent: 'space-between',
+                  'justify-content': 'space-between',
                 }}
               >
                 <div>
                   <h3
                     style={{
-                      fontSize: '16px',
-                      fontWeight: '600',
+                      'font-size': '16px',
+                      'font-weight': '600',
                       margin: '0 0 4px',
                     }}
                   >
@@ -218,7 +403,7 @@ const AdminPage = () => {
                   <p
                     style={{
                       color: '#6b7280',
-                      fontSize: '14px',
+                      'font-size': '14px',
                       margin: '0 0 8px',
                     }}
                   >
@@ -228,15 +413,15 @@ const AdminPage = () => {
                 <span
                   style={{
                     color: '#2563eb',
-                    fontSize: '13px',
+                    'font-size': '13px',
                   }}
                 >
                   View →
                 </span>
               </div>
-              <div style={{ color: '#9ca3af', display: 'flex', fontSize: '13px', gap: '16px' }}>
+              <div style={{ color: '#9ca3af', display: 'flex', 'font-size': '13px', gap: '16px' }}>
                 <span>{new URL(feed.link).hostname}</span>
-                <span>Updated: {new Date(feed.updatedAt).toLocaleDateString()}</span>
+                <span>Created: {new Date(feed.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
           )}
@@ -244,13 +429,4 @@ const AdminPage = () => {
       </div>
     </div>
   );
-};
-
-const inputStyle = {
-  border: '1px solid #d1d5db',
-  borderRadius: '6px',
-  boxSizing: 'border-box' as const,
-  fontSize: '14px',
-  padding: '8px 12px',
-  width: '100%',
 };

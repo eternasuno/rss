@@ -1,16 +1,23 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/solid-router';
-import { getCurrentUser } from '../server/auth';
+import { getSession } from '../lib/auth-utils';
 
 export const Route = createFileRoute('/_authed')({
   beforeLoad: async ({ location }) => {
-    const user = await getCurrentUser();
-    if (!user) {
+    const session = await getSession();
+    if (!session || !session.user) {
       throw redirect({ search: { redirect: location.href }, to: '/login' });
     }
-    return { user };
+
+    return { user: session.user };
   },
   component: () => (
-    <main style={{ margin: '0 auto', 'max-width': '960px', padding: '24px' }}>
+    <main
+      style={{
+        margin: '0 auto',
+        'max-width': '960px',
+        padding: '24px',
+      }}
+    >
       <Outlet />
     </main>
   ),

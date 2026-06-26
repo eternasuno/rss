@@ -1,32 +1,13 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import * as path from 'node:path';
-import type { Feed, Item } from '@rss/shared';
-import { generateRssFeed } from 'feedsmith';
-
-let feedsDir: string | null = null;
 
 const getFeedsDir = (): string => {
-  if (!feedsDir) {
-    feedsDir = path.join(process.cwd(), 'data', 'feeds');
-    if (!existsSync(feedsDir)) {
-      mkdirSync(feedsDir, { recursive: true });
-    }
+  const feedsDir = path.join(process.cwd(), 'data', 'feeds');
+  if (!existsSync(feedsDir)) {
+    mkdirSync(feedsDir, { recursive: true });
   }
   return feedsDir;
 };
-
-export type RssGenParams = {
-  feed: Feed;
-  items: Item[];
-};
-
-export const generateFeedXml = ({ feed, items }: RssGenParams): string =>
-  generateRssFeed({
-    ...feed.data,
-    items: items.map((item) => ({
-      ...item.data,
-    })),
-  });
 
 export const writeFeedFile = ({ feedId, xml }: { feedId: string; xml: string }): void => {
   writeFileSync(path.join(getFeedsDir(), `${feedId}.xml`), xml, 'utf-8');

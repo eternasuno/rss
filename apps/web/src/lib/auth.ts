@@ -1,22 +1,18 @@
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import { betterAuth } from 'better-auth';
+import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { tanstackStartCookies } from 'better-auth/tanstack-start/solid';
+import { apiKey } from '@better-auth/api-key';
+import { db } from '../db';
+import * as schema from '../db/schema';
 
-export const hashPassword = ({ password }: { password: string }): string => {
-  const salt = randomBytes(16).toString('hex');
-  const hash = createHash('sha256').update(`${salt}:${password}`).digest('hex');
-  return `${salt}:${hash}`;
-};
-
-export const verifyPassword = ({
-  password,
-  hash,
-}: {
-  password: string;
-  hash: string;
-}): boolean => {
-  const [salt, storedHash] = hash.split(':');
-  if (!salt || !storedHash) return false;
-  const computed = createHash('sha256').update(`${salt}:${password}`).digest('hex');
-  return timingSafeEqual(Buffer.from(computed), Buffer.from(storedHash));
-};
-
-export const generateToken = (): string => randomBytes(32).toString('hex');
+export const auth = betterAuth({
+  database: drizzleAdapter(db, {
+    provider: 'sqlite',
+    schema,
+  }),
+  emailAndPassword: {
+    enabled: true,
+    disableSignUp: false,
+  },
+  plugins: [apiKey(), tanstackStartCookies()],
+});

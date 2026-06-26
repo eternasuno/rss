@@ -1,37 +1,55 @@
 import { createFileRoute, redirect, useRouter } from '@tanstack/solid-router';
-import { createSignal } from 'solid-js';
+import { createSignal, onMount } from 'solid-js';
 import { authClient } from '../lib/auth-client';
 import { checkHasUsers } from '../lib/auth-utils';
 
-export const Route = createFileRoute('/login')({
+export const Route = createFileRoute('/register')({
   beforeLoad: async () => {
     const hasUsers = await checkHasUsers();
-    if (!hasUsers) {
-      throw redirect({ to: '/register' });
+    if (hasUsers) {
+      throw redirect({ to: '/login' });
     }
   },
-  component: LoginPage,
+  component: RegisterPage,
 });
 
-const LoginPage = () => {
+const RegisterPage = () => {
   const router = useRouter();
+  const [name, setName] = createSignal('');
   const [email, setEmail] = createSignal('');
   const [password, setPassword] = createSignal('');
   const [error, setError] = createSignal('');
   const [loading, setLoading] = createSignal(false);
 
-  const handleSubmit = async (e: Event) => {
+  // Double-check no users exist on mount
+  onMount(async () => {
+    const hasUsers = await checkHasUsers();
+    if (hasUsers) {
+      router.navigate({ to: '/login' });
+    }
+  });
+
+  const handleRegister = async (e: Event) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    const { error: signInError } = await authClient.signIn.email({
+    // Server-side check already in beforeLoad, but verify again
+    const hasUsers = await checkHasUsers();
+    if (hasUsers) {
+      setError('Setup already completed');
+      setLoading(false);
+      return;
+    }
+
+    const { error: signUpError } = await authClient.signUp.email({
       email: email(),
       password: password(),
+      name: name(),
     });
 
-    if (signInError) {
-      setError(signInError.message || 'Login failed');
+    if (signUpError) {
+      setError(signUpError.message || 'Registration failed');
       setLoading(false);
       return;
     }
@@ -44,10 +62,37 @@ const LoginPage = () => {
       <h1
         style={{ 'font-size': '24px', 'font-weight': 'bold', 'margin-bottom': '24px' }}
       >
-        RSS Feed Manager
+        Set Up RSS Feed Manager
       </h1>
+      <p style={{ 'margin-bottom': '24px', color: '#6b7280' }}>
+        Create the first admin account. Only one registration is allowed.
+      </p>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleRegister}>
+        <div style={{ 'margin-bottom': '16px' }}>
+          <label
+            for="name"
+            style={{ display: 'block', 'font-weight': '500', 'margin-bottom': '4px' }}
+          >
+            Name
+          </label>
+          <input
+            id="name"
+            type="text"
+            value={name()}
+            onInput={(e) => setName(e.currentTarget.value)}
+            style={{
+              border: '1px solid #d1d5db',
+              'border-radius': '6px',
+              'box-sizing': 'border-box',
+              'font-size': '16px',
+              padding: '8px 12px',
+              width: '100%',
+            }}
+            required
+          />
+        </div>
+
         <div style={{ 'margin-bottom': '16px' }}>
           <label
             for="email"
@@ -127,7 +172,7 @@ const LoginPage = () => {
             width: '100%',
           }}
         >
-          {loading() ? 'Signing In...' : 'Sign In'}
+          {loading() ? 'Creating Account...' : 'Create Account'}
         </button>
       </form>
     </div>
