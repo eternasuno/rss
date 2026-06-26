@@ -1,10 +1,8 @@
 import { createFileRoute } from '@tanstack/solid-router';
-import { eq } from 'drizzle-orm';
+import { Effect } from 'effect';
 import { FeedId } from '@rss/core/entity';
-import { addItem } from '@rss/core/usecase';
+import { addItem, getFeed } from '@rss/core/usecase';
 import { generateXML } from '@rss/core/usecase';
-import { db } from '../db';
-import { feeds } from '../db/schema';
 import { AppRuntime } from '../lib/effect-runtime';
 import { writeFeedFile } from '../lib/feed-gen';
 import { getUserIdFromApiKey } from '../lib/auth-utils';
@@ -29,8 +27,13 @@ export const Route = createFileRoute('/api/$feedId/items')({
           );
         }
 
-        const feed = db.select().from(feeds).where(eq(feeds.id, params.feedId)).get();
-        if (!feed || feed.userId !== keyUserId) {
+        const feedResult = await AppRuntime.runPromise(
+          getFeed(FeedId.make(params.feedId)).pipe(
+            Effect.catchTag('AppError', () => Effect.succeed(null)),
+          )
+        );
+
+        if (!feedResult || feedResult.feed.userId !== keyUserId) {
           return Response.json({ error: 'Feed not found', success: false }, { status: 404 });
         }
 

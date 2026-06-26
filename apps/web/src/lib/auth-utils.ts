@@ -2,8 +2,7 @@ import { createServerFn } from '@tanstack/solid-start';
 import { getRequestHeaders } from '@tanstack/solid-start/server';
 import { count } from 'drizzle-orm';
 import { auth } from './auth';
-import { db } from '../db';
-import { user } from '../db/schema';
+import { db, user } from './db';
 
 export const getSession = createServerFn({ method: 'GET' }).handler(async () => {
   const headers = getRequestHeaders();
