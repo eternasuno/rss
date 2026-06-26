@@ -1,17 +1,17 @@
 import { createServerFn } from '@tanstack/solid-start';
 import { getRequestHeaders } from '@tanstack/solid-start/server';
-import { count } from 'drizzle-orm';
-import { auth } from './auth';
-import { db, user } from './db';
 
 export const getSession = createServerFn({ method: 'GET' }).handler(async () => {
   const headers = getRequestHeaders();
+  const { auth } = await import('./auth');
   const session = await auth.api.getSession({ headers });
 
   return session;
 });
 
 export const checkHasUsers = createServerFn({ method: 'GET' }).handler(async () => {
+  const { count } = await import('drizzle-orm');
+  const { db, user } = await import('./db');
   const rows = await db.select({ count: count() }).from(user);
 
   return rows[0].count > 0;
@@ -24,6 +24,7 @@ export const checkHasUsers = createServerFn({ method: 'GET' }).handler(async () 
  * is present at runtime.
  */
 export const getUserIdFromApiKey = async (apiKey: string): Promise<string | null> => {
+  const { auth } = await import('./auth');
   const result = await auth.api.verifyApiKey({ body: { key: apiKey } });
   if (!result.valid || !result.key) return null;
   const key = result.key as unknown as { userId: string };
@@ -38,6 +39,7 @@ export type ApiKeyData = {
 
 export const listApiKeysFn = createServerFn({ method: 'GET' }).handler(async () => {
   const headers = getRequestHeaders();
+  const { auth } = await import('./auth');
   const session = await auth.api.getSession({ headers });
   if (!session?.user) throw new Error('Unauthorized');
 
@@ -50,6 +52,7 @@ export const createApiKeyFn = createServerFn({ method: 'POST' })
   .validator((d: { name: string }) => d)
   .handler(async ({ data: { name } }) => {
     const headers = getRequestHeaders();
+    const { auth } = await import('./auth');
     const session = await auth.api.getSession({ headers });
     if (!session?.user) throw new Error('Unauthorized');
 
@@ -60,6 +63,7 @@ export const deleteApiKeyFn = createServerFn({ method: 'POST' })
   .validator((d: { keyId: string }) => d)
   .handler(async ({ data: { keyId } }) => {
     const headers = getRequestHeaders();
+    const { auth } = await import('./auth');
     const session = await auth.api.getSession({ headers });
     if (!session?.user) throw new Error('Unauthorized');
 
