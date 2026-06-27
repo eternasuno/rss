@@ -71,8 +71,8 @@ function TitleSection({ feedId }: { feedId: string }) {
   );
 
   return (
-    <Show when={data()} fallback={<div class="skeleton h-32 w-full" />}>
-      <Breadcrumbs feedTitle={data()?.feed?.title ?? 'Feed'} />
+    <Show when={data()?.feed} fallback={<div class="skeleton h-32 w-full" />}>
+      <Breadcrumbs feedTitle={data()?.feed?.data?.title ?? 'Feed'} />
       <FeedInfo feed={data()?.feed} feedId={feedId} />
       <ItemControls feedId={feedId} refetch={refetch} />
       <h2 class="text-xl font-bold mb-4">Items</h2>

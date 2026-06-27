@@ -4,10 +4,10 @@ import { FeedGeneratorLive } from '@rss/adapter/feed-generator';
 import { FeedRepositoryLive } from '@rss/adapter/feed-repository';
 import { ItemRepositoryLive } from '@rss/adapter/item-repository';
 import { FeedId, UserId } from '@rss/core/entity';
-import { FeedRepository } from '@rss/core/port';
+import { FeedRepository, ItemRepository } from '@rss/core/port';
 import { addItem, createFeed, generateXML } from '@rss/core/usecase';
 import { DB } from '@rss/infrastructure-sqlite/db';
-import { Effect, Layer, ManagedRuntime } from 'effect';
+import { Effect, Layer, ManagedRuntime, Option } from 'effect';
 import { Hono } from 'hono';
 import { renderPage } from 'vike/server';
 import { auth } from './better-auth';
@@ -61,9 +61,12 @@ app.get('/api/feeds/:feedId', async (c) => {
 
   const result = await runtime.runPromise(
     Effect.gen(function* () {
-      const repo = yield* FeedRepository;
+      const feedRepo = yield* FeedRepository;
+      const itemRepo = yield* ItemRepository;
+      const feedOption = yield* feedRepo.findById(FeedId.make(feedId));
+      const items = yield* itemRepo.findByFeedId(FeedId.make(feedId));
 
-      return yield* repo.findById(FeedId.make(feedId));
+      return { feed: feedOption.pipe(Option.getOrNull), items };
     })
   );
 
