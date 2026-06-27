@@ -90,6 +90,9 @@ importers:
       '@types/node':
         specifier: ^24.0.0
         version: 24.13.2
+      drizzle-kit:
+        specifier: ^0.31.0
+        version: 0.31.10
       typescript:
         specifier: ^6.0.0
         version: 6.0.3
