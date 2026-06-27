@@ -1,76 +1,101 @@
 # RSS Feed Manager
 
-A self-hosted RSS feed management platform built with TanStack Start, SolidJS, and SQLite.
+Self-hosted RSS feed management platform. Create feeds, add items via API, serve RSS/Podcast XML.
 
-## Project Goal
+## Project Status
 
-Provide a web UI to create and manage RSS feeds, an API to programmatically add items, and auto-generated RSS XML feeds served as static files.
+- `packages/core/`, `packages/adapter/`, `packages/infrastructure-sqlite/` — DONE
+- `apps/` — EMPTY (no web/gateway layer yet; routes, auth, HTTP server not implemented)
 
-## Tech Stack
+## Quick Start
 
-| Layer | Technology |
-|-------|-----------|
-| Full-stack framework | TanStack Start + SolidJS |
-| Build tool | Vite 7 |
-| Database | SQLite (Drizzle ORM + better-sqlite3) |
-| RSS generation | feedsmith |
-| Monorepo | pnpm workspace + Turborepo |
-| Lint/Format | Biome |
-| Auth | Session cookies + bcrypt (server functions) |
+```bash
+pnpm install && pnpm prepare   # install + patch TypeScript LSP for Effect
+pnpm --filter @rss/infrastructure-sqlite run db:push
+pnpm check                     # type-check + lint all packages
+pnpm test                      # run all tests
+```
+
+## Architecture
+
+```
+core/   = Entity + Port + Usecase (depends only on effect)
+adapter/ = All Adapter + Infrastructure (depends on core + infra-sqlite)
+infrastructure-sqlite/  = SQLite schema + DB layer
+```
+
+### Entity (packages/core/src/entity/)
+Effect Schema models. Branded IDs (`FeedId`, `ItemId`, `UserId`). RSS-standard fields are typed; all optional/namespace fields go in `extraData: Record<string, JSONValue>`.
+
+### Port (packages/core/src/port/)
+Effect Context Tags (interfaces). Each is a `Context.Tag` with an `interface`:
+
+```ts
+export class FeedRepository extends Context.Tag('FeedRepository')<FeedRepository, IFeedRepository>() {}
+```
+
+### Usecase (packages/core/src/usecase/)
+Effect pipelines using `Effect.gen`. Dependencies resolved via `yield*`. No framework deps.
+
+### Adapter (packages/adapter/src/)
+Layers implementing ports. Built with `Layer.succeed` or `Layer.effect`.
+
+### Infra-sqlite (packages/infrastructure-sqlite/src/)
+- `db.ts` — `DB` class extending `Effect.Service`, uses `@effect/sql-sqlite-node` + `@effect/sql-drizzle`
+- `schema.ts` — Drizzle SQLite tables for feeds, items, and better-auth (user, session, account, verification, api_key)
+- Default DB: `data/db.sqlite` (overridable via `DATABASE_URL` env var)
+
+## Testing Patterns
+
+Uses `@effect/vitest` (`it.effect`):
+
+```ts
+it.effect('description', () =>
+  Effect.gen(function* () {
+    const result = yield* someUsecase(input);
+    assert.strictEqual(result.property, expected);
+  }).pipe(Effect.provide(Layer.mergeAll(MockA, MockB)))
+);
+```
+
+- Core tests use hand-rolled mock Layers (`packages/core/test/mock/`)
+- Adapter tests use in-memory SQLite (`:memory:`) with `createTables` before each test group
+- `ConfigProvider.fromJson({ DATABASE_URL: ':memory:' })` for DB tests
 
 ## Commands
 
 | Command | Scope | Description |
 |---------|-------|-------------|
-| `pnpm dev` | root | Start Turborepo dev |
-| `pnpm lint` | root | Lint all packages |
-| `pnpm typecheck` | root | Type-check all packages |
-| `pnpm format` | root | Format with Biome |
-| `pnpm run db:generate` | apps/web | Generate Drizzle migrations |
-| `pnpm run db:migrate` | apps/web | Apply migrations |
-| `pnpm run db:push` | apps/web | Push schema (dev) |
-| `pnpm run db:studio` | apps/web | Drizzle Studio |
+| `pnpm build` | root | Build all packages (turbo) |
+| `pnpm check` | root | `tsc --noEmit && biome check --fix` per package |
+| `pnpm test` | root | Run all package tests (turbo) |
+| `pnpm prepare` | root | Run `effect-language-service patch` (needed for TS LSP) |
+| `pnpm --filter @rss/$PACKAGE run test` | root | Test one package (core, adapter, infrastructure-sqlite) |
+| `pnpm --filter @rss/infrastructure-sqlite run db:push` | root | Push schema to SQLite |
+| `pnpm --filter @rss/infrastructure-sqlite run db:generate` | root | Generate Drizzle migrations |
+| `pnpm --filter @rss/infrastructure-sqlite run db:studio` | root | Drizzle Studio |
 
-## Architecture
+## Key Conventions
 
-```
-apps/web/src/
-├── routes/           Page & server routes (file-based routing via TanStack Router)
-│   ├── __root.tsx    Root layout (HTML document shell)
-│   ├── index.tsx     Home → redirect to /admin
-│   ├── login.tsx     Login page (email + password)
-│   ├── _authed.tsx   Auth guard (beforeLoad → redirect if no session)
-│   ├── _authed/admin/ Admin pages (create/list feeds)
-│   ├── feed.$id.ts   Server route: GET /feed/:id → RSS XML
-│   └── api.$feedId.items.ts  Server route: POST /api/:feedId/items
-├── server/           Server functions (createServerFn)
-│   ├── auth.ts       login/logout/register/getCurrentUser
-│   └── feeds.ts      createFeed/listFeeds/getFeedDetail
-├── db/               Database layer
-│   ├── schema.ts     Drizzle schema (users, apiKeys, feeds, items)
-│   └── index.ts      DB connection + migrator
-├── lib/              Pure utilities
-│   ├── auth.ts       Password hashing, token generation
-│   └── feed-gen.ts   RSS XML generation + file I/O
-├── utils/
-│   └── session.ts    TanStack Start session helper
-└── router.tsx        Router configuration
-```
-
-## API Routes
-
-- `POST /api/:feedId/items` — Add item (requires `X-API-Key` header)
-- `GET /feed/:id` — RSS XML feed
-
-## Page Routes
-
-- `/login` — Login/Register page
-- `/admin` — Feed management (authenticated)
-- `/admin/feed/:id` — Feed detail with items
+- **No comments in code** unless absolutely necessary
+- **Single-parameter functions** (Biome enforces max 1 param; use objects for multiple)
+- **ESM only** (`"type": "module"` everywhere)
+- **Imports from effect** — `Schema`, `DateTime`, `Effect`, `Layer`, `Context`, `Option`, `pipe`
+- **Branded types** via `Schema.String.pipe(Schema.brand('X'))` — use `.make()` to construct
+- **`extraData` spread pattern**: `...feed.data` / `...item.data` + destructure known fields
+- **pmpm catalog** for shared deps in `pnpm-workspace.yaml`
+- **Biome over Prettier** — single quotes, trailing commas (es5), 2-space indent, 98 line width
 
 ## Environment Variables
 
 ```
-DATABASE_URL=./data/rss.db
-SESSION_SECRET=change-me-to-a-32-char-random-string
+DATABASE_URL=./data/db.sqlite
+BETTER_AUTH_SECRET=change-me-to-a-32-char-random-string
+BETTER_AUTH_URL=http://localhost:5100
 ```
+
+## Dev Environment
+
+- `devenv` (Nix) + `direnv` — auto-activates on `cd`
+- `.devcontainer.json` for containerized dev
+- No CI workflows configured yet

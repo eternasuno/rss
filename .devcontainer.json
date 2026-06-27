@@ -1,7 +1,13 @@
 {
   "customizations": {
     "vscode": {
-      "extensions": ["mkhl.direnv", "biomejs.biome", "eamodio.gitlens"]
+      "extensions": [
+        "biomejs.biome",
+        "eamodio.gitlens",
+        "jnoortheen.nix-ide",
+        "mkhl.direnv",
+        "Supermaven.supermaven"
+      ]
     }
   },
   "image": "ghcr.io/cachix/devenv/devcontainer:latest",

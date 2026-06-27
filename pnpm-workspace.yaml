@@ -1,3 +1,26 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+allowBuilds:
+  better-sqlite3: true
+  esbuild: true
+  msgpackr-extract: true
+
+catalog:
+  "@effect/sql": ^0.51.1
+  "@effect/vitest": ^0.29.0
+  drizzle-orm: ^0.45.0
+  effect: ^3.21.4
+  vitest: ^3.2.0
+
+minimumReleaseAgeExclude:
+  - '@better-auth/api-key@1.6.21'
+  - '@better-auth/core@1.6.21'
+  - '@better-auth/drizzle-adapter@1.6.21'
+  - '@better-auth/kysely-adapter@1.6.21'
+  - '@better-auth/memory-adapter@1.6.21'
+  - '@better-auth/mongo-adapter@1.6.21'
+  - '@better-auth/prisma-adapter@1.6.21'
+  - '@better-auth/telemetry@1.6.21'
+  - better-auth@1.6.21

@@ -1,0 +1,21 @@
+{
+  "dependencies": {
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@effect/vitest": "catalog:",
+    "vitest": "catalog:"
+  },
+  "exports": {
+    "./entity": "./src/entity.ts",
+    "./port": "./src/port.ts",
+    "./usecase": "./src/usecase.ts"
+  },
+  "name": "@rss/core",
+  "private": true,
+  "scripts": {
+    "check": "tsc --noEmit && biome check --fix",
+    "test": "vitest run"
+  },
+  "type": "module"
+}
