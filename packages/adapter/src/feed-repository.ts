@@ -4,12 +4,20 @@ import { DB, Schema } from '@rss/infrastructure-sqlite/db';
 import { eq, inArray } from 'drizzle-orm';
 import { DateTime, Effect, Layer, Option, pipe } from 'effect';
 
+const parseLink = (url: string): URL => {
+  try {
+    return new URL(url);
+  } catch {
+    return new URL('https://example.com');
+  }
+};
+
 const fromDBSchema = (row: typeof Schema.feeds.$inferSelect): Feed => ({
   createdAt: DateTime.unsafeMake(row.createdAt),
   data: {
     ...row.extraData,
     description: row.description,
-    link: new URL(row.link),
+    link: parseLink(row.link),
     title: row.title,
   } as FeedData,
   id: FeedId.make(row.id),
