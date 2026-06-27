@@ -1,7 +1,7 @@
 import { assert, it } from '@effect/vitest';
 import { Crypto } from '@rss/core/port';
 import { Effect } from 'effect';
-import { UUIdCryptoLayer } from '../src/crypto';
+import { CryptoLive } from '../src/crypto';
 
 it.effect('Crypto: generates a UUID string', () =>
   Effect.gen(function* () {
@@ -10,7 +10,7 @@ it.effect('Crypto: generates a UUID string', () =>
 
     assert.ok(typeof uuid === 'string');
     assert.ok(uuid.length > 0);
-  }).pipe(Effect.provide(UUIdCryptoLayer))
+  }).pipe(Effect.provide(CryptoLive))
 );
 
 it.effect('Crypto: generates unique UUIDs', () =>
@@ -20,5 +20,5 @@ it.effect('Crypto: generates unique UUIDs', () =>
     const b = yield* crypto.generateUUId();
 
     assert.notStrictEqual(a, b);
-  }).pipe(Effect.provide(UUIdCryptoLayer))
+  }).pipe(Effect.provide(CryptoLive))
 );

@@ -2,7 +2,7 @@ import { assert, it } from '@effect/vitest';
 import type { Feed, FeedData, FeedId, Item, ItemId, UserId } from '@rss/core/entity';
 import { FeedGenerator } from '@rss/core/port';
 import { DateTime, Effect } from 'effect';
-import { FeedsmithGeneratorLayer } from '../src/feed-generator';
+import { FeedGeneratorLive } from '../src/feed-generator';
 
 const feed: Feed = {
   createdAt: DateTime.unsafeNow(),
@@ -34,7 +34,7 @@ it.effect('FeedsmithGenerator: generates valid RSS XML with items', () =>
     assert.ok(xml.includes('<title>Test Feed</title>'));
     assert.ok(xml.includes('<item>'));
     assert.ok(xml.includes('<title>Test Item</title>'));
-  }).pipe(Effect.provide(FeedsmithGeneratorLayer))
+  }).pipe(Effect.provide(FeedGeneratorLive))
 );
 
 it.effect('FeedsmithGenerator: generates RSS XML with no items', () =>
@@ -44,5 +44,5 @@ it.effect('FeedsmithGenerator: generates RSS XML with no items', () =>
 
     assert.ok(xml.includes('<channel>'));
     assert.ok(xml.includes('<title>Test Feed</title>'));
-  }).pipe(Effect.provide(FeedsmithGeneratorLayer))
+  }).pipe(Effect.provide(FeedGeneratorLive))
 );

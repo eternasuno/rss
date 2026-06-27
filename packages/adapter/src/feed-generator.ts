@@ -2,7 +2,7 @@ import { AppError, FeedGenerator } from '@rss/core/port';
 import { Effect, Layer } from 'effect';
 import { generateRssFeed } from 'feedsmith';
 
-export const FeedsmithGeneratorLayer = Layer.succeed(FeedGenerator, {
+export const FeedGeneratorLive = Layer.succeed(FeedGenerator, {
   generateFeedXml: ({ feed, items }) =>
     Effect.try({
       catch: (error) =>

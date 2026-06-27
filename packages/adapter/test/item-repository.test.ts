@@ -2,17 +2,16 @@ import { assert, it } from '@effect/vitest';
 import type { FeedId, ItemData, ItemId } from '@rss/core/entity';
 import { ItemRepository } from '@rss/core/port';
 import { DB } from '@rss/infrastructure-sqlite/db';
-import { Effect, Layer, Option } from 'effect';
+import { Effect, Function as Fn, Layer, Option } from 'effect';
 import { ItemRepositoryLive } from '../src/item-repository';
 import { mockConfigProvider } from './mock/config';
 import { makeItem } from './mock/item';
 import { createTables } from './mock/tables';
 
-const provideTestLayers = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
-  effect.pipe(
-    Effect.provide(ItemRepositoryLive.pipe(Layer.provideMerge(DB.Default))),
-    Effect.withConfigProvider(mockConfigProvider)
-  );
+const provideTestLayers = Fn.flow(
+  Effect.provide(ItemRepositoryLive.pipe(Layer.provideMerge(DB.Default))),
+  Effect.withConfigProvider(mockConfigProvider)
+);
 
 it.effect('ItemRepository: creates and returns an item', () =>
   Effect.gen(function* () {

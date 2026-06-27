@@ -1,166 +1,101 @@
 # RSS Feed Manager
 
-A self-hosted RSS feed management platform. Create feeds, add items via API, and serve RSS/Podcast XML feeds.
+Self-hosted RSS feed management platform. Create feeds, add items via API, serve RSS/Podcast XML.
 
-## Project Goal
+## Project Status
 
-Build an automated RSS pipeline:
-1. Provide API to generate RSS/podcast XML consumable by RSS readers and podcast players
-2. Future: auto-extract full text, AI processing on item ingestion
-3. Ultimate goal: end-to-end automated RSS pipeline
+- `packages/core/`, `packages/adapter/`, `packages/infrastructure-sqlite/` — DONE
+- `apps/` — EMPTY (no web/gateway layer yet; routes, auth, HTTP server not implemented)
 
-## Design Philosophy
+## Quick Start
 
-### Flexible Schema — RSS Standard Minimum
-
-Do not bake format-specific fields into the database schema. Follow RSS 2.0 minimum requirements:
-- `<channel>` requires: `title`, `link`, `description`
-- `<item>` requires: `title` or `description`
-
-All other fields (RSS optional, iTunes namespace, Podcast 2.0, Media RSS, Atom extensions, etc.) go into an `extraData: Record<string, JSONValue>` JSON column. Users decide what fields to include via the API.
-
-### feedsmith Capabilities
-
-feedsmith v2.9.4 natively supports structured nested objects:
-- **Standard RSS 2.0**: `enclosures[]`, `pubDate`, `guid`, `categories[]`, `source`, etc.
-- **iTunes namespace**: `itunes.author`, `itunes.duration`, `itunes.episode`, `itunes.season`, `itunes.episodeType`, `itunes.image`, `itunes.explicit`, `itunes.categories`, `itunes.owner`, `itunes.type`, `itunes.title`
-- **Podcast 2.0**: `podcast.transcripts[]`, `podcast.chapters`, `podcast.persons[]`, `podcast.funding[]`, `podcast.locked`, `podcast.medium`, `podcast.alternateEnclosures[]`, etc.
-- **Media RSS**: `media.contents[]`, `media.thumbnails[]`
-
-All fields are passed via nested objects in `extraData`, fed through `...feed.extraData` / `...item.extraData` spread into feedsmith's `generateRssFeed` (in lenient mode).
-
-## Clean Architecture (Effect-TS)
-
-### Architecture Layers
-
-```
-gateway/  ──depends on──▶ usecase/  ──depends on──▶ port/  ──depends on──▶ entity/
-    │                         ▲
-    │                         │ implements
-    └──depends on──▶ adapter/ ─┘
-                         │
-                         └──depends on──▶ infrastructure/
+```bash
+pnpm install && pnpm prepare   # install + patch TypeScript LSP for Effect
+pnpm --filter @rss/infrastructure-sqlite run db:push
+pnpm check                     # type-check + lint all packages
+pnpm test                      # run all tests
 ```
 
-Simplified architecture (project is small, single implementations):
-- `core/` = Entity + Port + Usecase (depends only on `effect`)
-- `adapter/` = All Adapter + Infrastructure implementations
-
-### Entity Layer (`packages/core/src/entity/`)
-
-Pure data models using Effect-TS Schema. Zero framework dependencies.
-
-| Entity | Fields | Notes |
-|--------|--------|-------|
-| **Feed** | id(FeedId), userId(UserId), title(NonEmptyTrimmedString), description(NonEmptyTrimmedString), link(Schema.URL), extraData(ExtraData), createdAt(DateTime.Utc), updatedAt(DateTime.Utc) | Branded FeedId. link is RSS 2.0 required channel field |
-| **Item** | id(ItemId), feedId(FeedId), title(NonEmptyTrimmedString), extraData(ExtraData), createdAt(DateTime.Utc) | Branded ItemId. title is RSS 2.0 minimum for items |
-
-### Target Architecture (WIP)
+## Architecture
 
 ```
-packages/core/src/
-├── entity/            # Pure data models (Effect Schema) — DONE
-│   ├── value-object.ts  # JSONValue, ExtraData, UserId brand
-│   ├── feed.ts
-│   └── item.ts
-├── port/              # Interface contracts (Effect Tags) — DONE
-│   ├── app-error.ts       # Unified AppError (Data.TaggedError with ErrorCode literal)
-│   ├── crypto.ts          # UUID generation
-│   ├── feed-generator.ts  # RSS XML generation via feedsmith
-│   ├── feed-repository.ts
-│   └── item-repository.ts
-└── usecase/           # Business logic (Effect pipelines) — DONE
-    ├── add-item.ts
-    ├── create-feed.ts
-    ├── generate-xml.ts     # Composes getFeed + FeedGenerator.generateFeedXml
-    └── get-feed.ts
+core/   = Entity + Port + Usecase (depends only on effect)
+adapter/ = All Adapter + Infrastructure (depends on core + infra-sqlite)
+infrastructure-sqlite/  = SQLite schema + DB layer
 ```
 
-### Adapter Layer (`packages/adapter/src/`) — DONE
+### Entity (packages/core/src/entity/)
+Effect Schema models. Branded IDs (`FeedId`, `ItemId`, `UserId`). RSS-standard fields are typed; all optional/namespace fields go in `extraData: Record<string, JSONValue>`.
 
-| Adapter | Implements | Technology |
-|---------|-----------|------------|
-| UUID Crypto | Crypto (core/port) | node:crypto |
-| FeedsmithGenerator | FeedGenerator (core/port) | feedsmith (lenient mode) |
-| FeedRepository | FeedRepository (core/port) | @effect/sql-drizzle + @effect/sql-sqlite-node |
-| ItemRepository | ItemRepository (core/port) | @effect/sql-drizzle + @effect/sql-sqlite-node |
+### Port (packages/core/src/port/)
+Effect Context Tags (interfaces). Each is a `Context.Tag` with an `interface`:
 
-### Database Schema (`packages/infrastructure-sqlite/src/schema.ts`)
-
-All tables defined in one file — both app and better-auth tables:
-
-| Table | Purpose |
-|-------|---------|
-| `feeds` | RSS feed definitions |
-| `items` | Feed items |
-| `user`, `session`, `account`, `verification` | BetterAuth auth |
-| `api_key` | BetterAuth API key plugin (v1.5+: uses `referenceId`, `configId`) |
-
-Run `pnpm -w run db:push` to create/update all tables in `apps/web/data/rss.db`.
-
-### Gateway Layer (`apps/web/src/routes/`) — DONE
-
-TanStack Start routes and server functions that only do HTTP orchestration:
-- Call usecases via `AppRuntime.runPromise()` (Effect ManagedRuntime)
-- Wire adapters via Effect's runtime
-- Auth via better-auth
-
-### Auth Architecture
-
-- **Server**: `apps/web/src/lib/auth.ts` — betterAuth() instance with Drizzle adapter + API key plugin + TanStack Start cookies
-- **Client**: `apps/web/src/lib/auth-client.ts` — createAuthClient() for browser-side auth calls
-- **Auth API**: `apps/web/src/routes/api/auth.$.tsx` — TanStack Start route catching `/api/auth/*` with server handlers
-- **Auth utilities**: `apps/web/src/lib/auth-utils.ts` — server functions (getSession, checkHasUsers, API key CRUD) use `await import()` for server-only deps to prevent client bundle leaks
-- **API key plugin**: Uses `@better-auth/api-key` with schema key `apikey` (lowercase) and `referenceId` field (v1.5+)
-
-## Future Pipeline
-
-```
-Source URL → Cron poller → Content extractor → AI processor → structured item → write XML
+```ts
+export class FeedRepository extends Context.Tag('FeedRepository')<FeedRepository, IFeedRepository>() {}
 ```
 
-- **Source table**: URL sources to poll periodically
-- **Background worker**: Cron job to fetch new content
-- **Content extraction**: Readability/article extraction
-- **AI processing**: Summarization, tagging, categorization
-- **Media processing**: Podcast audio download/transcode
+### Usecase (packages/core/src/usecase/)
+Effect pipelines using `Effect.gen`. Dependencies resolved via `yield*`. No framework deps.
 
-## Ports
+### Adapter (packages/adapter/src/)
+Layers implementing ports. Built with `Layer.succeed` or `Layer.effect`.
 
-| Service | Port |
-|---------|------|
-| Web app (dev) | 5100 |
+### Infra-sqlite (packages/infrastructure-sqlite/src/)
+- `db.ts` — `DB` class extending `Effect.Service`, uses `@effect/sql-sqlite-node` + `@effect/sql-drizzle`
+- `schema.ts` — Drizzle SQLite tables for feeds, items, and better-auth (user, session, account, verification, api_key)
+- Default DB: `data/db.sqlite` (overridable via `DATABASE_URL` env var)
 
-## Environment Variables
+## Testing Patterns
 
+Uses `@effect/vitest` (`it.effect`):
+
+```ts
+it.effect('description', () =>
+  Effect.gen(function* () {
+    const result = yield* someUsecase(input);
+    assert.strictEqual(result.property, expected);
+  }).pipe(Effect.provide(Layer.mergeAll(MockA, MockB)))
+);
 ```
-DATABASE_URL=./data/rss.db
-BETTER_AUTH_SECRET=change-me-to-a-32-char-random-string
-BETTER_AUTH_URL=http://localhost:5100
-```
+
+- Core tests use hand-rolled mock Layers (`packages/core/test/mock/`)
+- Adapter tests use in-memory SQLite (`:memory:`) with `createTables` before each test group
+- `ConfigProvider.fromJson({ DATABASE_URL: ':memory:' })` for DB tests
 
 ## Commands
 
 | Command | Scope | Description |
 |---------|-------|-------------|
-| `pnpm build` | root | Build all packages |
-| `pnpm check` | root | Type-check + lint all packages |
-| `pnpm test` | root | Run all tests |
-| `pnpm run test` | packages/core | Run core tests |
-| `pnpm run test:watch` | packages/core | Watch mode |
-| `pnpm run db:generate` | packages/infrastructure-sqlite | Generate Drizzle migrations |
-| `pnpm run db:push` | root (`pnpm -w`) | Create/update SQLite tables in `apps/web/data/rss.db` |
+| `pnpm build` | root | Build all packages (turbo) |
+| `pnpm check` | root | `tsc --noEmit && biome check --fix` per package |
+| `pnpm test` | root | Run all package tests (turbo) |
+| `pnpm prepare` | root | Run `effect-language-service patch` (needed for TS LSP) |
+| `pnpm --filter @rss/$PACKAGE run test` | root | Test one package (core, adapter, infrastructure-sqlite) |
+| `pnpm --filter @rss/infrastructure-sqlite run db:push` | root | Push schema to SQLite |
+| `pnpm --filter @rss/infrastructure-sqlite run db:generate` | root | Generate Drizzle migrations |
+| `pnpm --filter @rss/infrastructure-sqlite run db:studio` | root | Drizzle Studio |
 
-## Tech Stack
+## Key Conventions
 
-| Layer | Technology |
-|-------|-----------|
-| Architecture | Clean Architecture + Effect-TS |
-| Schema & Validation | Effect Schema (imported from `effect`) |
-| Full-stack framework | TanStack Start + SolidJS |
-| Build tool | Vite 7 |
-| Database | SQLite (Drizzle ORM + @effect/sql-sqlite-node) |
-| RSS generation | feedsmith |
-| Monorepo | pnpm 11 + Turborepo |
-| Lint/Format | Biome |
-| Auth | better-auth (TanStack Start) |
+- **No comments in code** unless absolutely necessary
+- **Single-parameter functions** (Biome enforces max 1 param; use objects for multiple)
+- **ESM only** (`"type": "module"` everywhere)
+- **Imports from effect** — `Schema`, `DateTime`, `Effect`, `Layer`, `Context`, `Option`, `pipe`
+- **Branded types** via `Schema.String.pipe(Schema.brand('X'))` — use `.make()` to construct
+- **`extraData` spread pattern**: `...feed.data` / `...item.data` + destructure known fields
+- **pmpm catalog** for shared deps in `pnpm-workspace.yaml`
+- **Biome over Prettier** — single quotes, trailing commas (es5), 2-space indent, 98 line width
+
+## Environment Variables
+
+```
+DATABASE_URL=./data/db.sqlite
+BETTER_AUTH_SECRET=change-me-to-a-32-char-random-string
+BETTER_AUTH_URL=http://localhost:5100
+```
+
+## Dev Environment
+
+- `devenv` (Nix) + `direnv` — auto-activates on `cd`
+- `.devcontainer.json` for containerized dev
+- No CI workflows configured yet
