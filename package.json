@@ -12,6 +12,7 @@
   "scripts": {
     "build": "turbo build",
     "check": "turbo check",
+    "dev": "turbo dev",
     "prepare": "effect-language-service patch",
     "test": "turbo test"
   },

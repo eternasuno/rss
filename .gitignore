@@ -52,3 +52,10 @@ build
 
 # tsbuildinfo
 tsconfig.tsbuildinfo
+
+# Deepwork tracking
+.slim/deepwork/
+
+# Next.js
+.next/
+out/

@@ -3,13 +3,26 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "build/**"]
+      "outputs": [".next/**", "dist/**", "build/**"],
+      "inputs": ["$TURBO_DEFAULT$", "src/**", "app/**", "public/**"]
     },
     "check": {
       "dependsOn": ["^check"]
     },
     "test": {
       "dependsOn": ["^test"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "db:push": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "start": {
+      "persistent": true,
+      "cache": false
     }
   }
 }
