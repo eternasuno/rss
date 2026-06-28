@@ -1,3 +1,4 @@
+import { apiKey } from '@better-auth/api-key';
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import { betterAuth } from 'better-auth';
 import { db } from '@/db';
@@ -11,4 +12,16 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  plugins: [
+    apiKey({
+      defaultPrefix: 'rss_',
+      enableMetadata: false,
+      enableSessionForAPIKeys: true,
+      rateLimit: {
+        enabled: true,
+        maxRequests: 100,
+        timeWindow: 60 * 60 * 1000,
+      },
+    }),
+  ],
 });

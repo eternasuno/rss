@@ -6,5 +6,5 @@ export default {
   },
   dialect: 'sqlite',
   out: './drizzle',
-  schema: './db/schema.ts',
+  schema: './db/schema',
 } satisfies Config;
