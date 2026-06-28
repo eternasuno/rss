@@ -1,14 +1,15 @@
 {
   "dependencies": {
-    "@rss/adapter": "workspace:*",
-    "@rss/core": "workspace:*",
-    "@rss/infrastructure-sqlite": "workspace:*",
+    "@effect/sql": "^0.51.1",
+    "@effect/sql-drizzle": "^0.50.0",
+    "@effect/sql-sqlite-node": "^0.52.0",
     "@tailwindcss/vite": "^4.3.1",
     "better-auth": "1.6.21",
-    "better-sqlite3": "^12.11.0",
+    "better-sqlite3": "^12.11.1",
     "daisyui": "^5.6.3",
-    "drizzle-orm": "catalog:",
-    "effect": "catalog:",
+    "drizzle-orm": "^0.45.0",
+    "effect": "^3.21.4",
+    "feedsmith": "^2.9.0",
     "hono": "^4.12.27",
     "solid-js": "^1.9.13",
     "tailwindcss": "^4.3.1",
@@ -16,10 +17,13 @@
     "vike-solid": "^0.8.3"
   },
   "devDependencies": {
+    "@effect/vitest": "^0.29.0",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^24.0.0",
     "drizzle-kit": "^0.31.0",
     "typescript": "^6.0.0",
-    "vite": "^8.1.0"
+    "vite": "^8.1.0",
+    "vitest": "^3.2.0"
   },
   "name": "@rss/web",
   "private": true,
@@ -29,7 +33,8 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "dev": "NODE_ENV=development vite dev"
+    "dev": "NODE_ENV=development vite dev",
+    "test": "vitest run"
   },
   "type": "module"
 }

@@ -1,15 +1,15 @@
 import './env';
-import { CryptoLive } from '@rss/adapter/crypto';
-import { FeedGeneratorLive } from '@rss/adapter/feed-generator';
-import { FeedRepositoryLive } from '@rss/adapter/feed-repository';
-import { ItemRepositoryLive } from '@rss/adapter/item-repository';
-import { FeedId, UserId } from '@rss/core/entity';
-import { FeedRepository, ItemRepository } from '@rss/core/port';
-import { addItem, createFeed, generateXML } from '@rss/core/usecase';
-import { DB } from '@rss/infrastructure-sqlite/db';
 import { Effect, Layer, ManagedRuntime, Option } from 'effect';
 import { Hono } from 'hono';
 import { renderPage } from 'vike/server';
+import { CryptoLive } from '../src/adapter/crypto';
+import { FeedGeneratorLive } from '../src/adapter/feed-generator';
+import { FeedRepositoryLive } from '../src/adapter/feed-repository';
+import { ItemRepositoryLive } from '../src/adapter/item-repository';
+import { FeedId, UserId } from '../src/core/entity';
+import { FeedRepository, ItemRepository } from '../src/core/port';
+import { addItem, createFeed, generateXML } from '../src/core/usecase';
+import { DB } from '../src/infrastructure/db';
 import { auth } from './better-auth';
 
 const runtime = ManagedRuntime.make(
