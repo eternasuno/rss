@@ -1,80 +1,49 @@
 import { Title } from '@solidjs/meta';
+import { createForm } from '@tanstack/solid-form';
 import { createSignal } from 'solid-js';
 import { signUp } from '../lib/auth-client';
-
-function Input(props: {
-  type: string;
-  placeholder: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <input
-      type={props.type}
-      placeholder={props.placeholder}
-      value={props.value}
-      onInput={(e) => props.onChange((e.currentTarget as HTMLInputElement).value)}
-      required
-    />
-  );
-}
-
-async function handleRegister(opts: {
-  e: Event;
-  name: string;
-  email: string;
-  password: string;
-  setError: (v: string) => void;
-  setLoading: (v: boolean) => void;
-}) {
-  opts.e.preventDefault();
-  opts.setLoading(true);
-  opts.setError('');
-  const { error: err } = await signUp.email({
-    email: opts.email,
-    name: opts.name,
-    password: opts.password,
-  });
-  if (err) {
-    opts.setError(err.message ?? 'Registration failed');
-    opts.setLoading(false);
-    return;
-  }
-
-  window.location.href = '/dashboard';
-}
+import { FormField } from '../components/FormField';
 
 export default function Register() {
-  const [nm, setNm] = createSignal('');
-  const [em, setEm] = createSignal('');
-  const [pw, setPw] = createSignal('');
-  const [er, setEr] = createSignal('');
-  const [ld, setLd] = createSignal(false);
-  const h = (e: Event) =>
-    handleRegister({
-      e,
-      email: em(),
-      name: nm(),
-      password: pw(),
-      setError: setEr,
-      setLoading: setLd,
-    });
+  const [submitError, setSubmitError] = createSignal('');
+
+  const form = createForm(() => ({
+    defaultValues: { name: '', email: '', password: '' },
+    onSubmit: async ({ value }) => {
+      setSubmitError('');
+      const { error } = await signUp.email(value);
+      if (error) {
+        setSubmitError(error.message ?? 'Registration failed');
+        return;
+      }
+      window.location.href = '/dashboard';
+    },
+  }));
+
   return (
     <>
       <Title>Register</Title>
       <h1>Register</h1>
-      <form onSubmit={h}>
-        <Input type="text" placeholder="Name" value={nm()} onChange={setNm} />
-        <Input type="email" placeholder="Email" value={em()} onChange={setEm} />
-        <Input type="password" placeholder="Password" value={pw()} onChange={setPw} />
-        <button type="submit" disabled={ld()}>
-          {ld() ? 'Creating account...' : 'Sign Up'}
-        </button>
+      <form onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); form.handleSubmit(); }}>
+        <form.Field name="name">
+          {(field) => <FormField field={field()} type="text" placeholder="Name" />}
+        </form.Field>
+        <form.Field name="email">
+          {(field) => <FormField field={field()} type="email" placeholder="Email" />}
+        </form.Field>
+        <form.Field name="password">
+          {(field) => <FormField field={field()} type="password" placeholder="Password" />}
+        </form.Field>
+        <form.Subscribe selector={(s) => ({ canSubmit: s.canSubmit, isSubmitting: s.isSubmitting })}>
+          {(state) => (
+            <button type="submit" disabled={!state().canSubmit}>
+              {state().isSubmitting ? 'Creating account...' : 'Sign Up'}
+            </button>
+          )}
+        </form.Subscribe>
+        {submitError() && <p role="alert">{submitError()}</p>}
       </form>
-      {er() && <p role="alert">{er()}</p>}
-      <p>
-        Already have an account? <a href="/login">Login</a>
-      </p>
+      <p>Already have an account? <a href="/login">Login</a></p>
     </>
   );
 }
