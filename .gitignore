@@ -62,3 +62,7 @@ app.config.timestamp_*.js
 
 # nitro
 .nitro
+
+# core dumps
+core
+core.*
