@@ -1,6 +1,6 @@
-import { useNavigate, useSearchParams } from '@solidjs/router';
+import { Navigate, useSearchParams } from '@solidjs/router';
 import { createForm } from '@tanstack/solid-form';
-import { type Accessor, createSignal } from 'solid-js';
+import { type Accessor, createSignal, Show } from 'solid-js';
 import { signIn } from '../lib/auth-client';
 import { AuthCard } from './AuthCard';
 import { FormField } from './FormField';
@@ -17,8 +17,8 @@ type LoginSubCb = any;
 
 function makeSubmitHandler(params: {
   setSubmitError: ReturnType<typeof createSignal<string>>[1];
-  navigate: ReturnType<typeof useNavigate>;
   redirectTo: () => string;
+  setRedirectUrl: ReturnType<typeof createSignal<string | null>>[1];
 }) {
   return async ({ value }: { value: { email: string; password: string } }) => {
     params.setSubmitError('');
@@ -28,7 +28,7 @@ function makeSubmitHandler(params: {
       params.setSubmitError(error.message ?? '登录失败');
       return;
     }
-    params.navigate(params.redirectTo());
+    params.setRedirectUrl(params.redirectTo());
   };
 }
 
@@ -100,9 +100,9 @@ function LoginFormContent(props: LoginFormProps) {
 }
 
 export function LoginForm() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [submitError, setSubmitError] = createSignal('');
+  const [redirectUrl, setRedirectUrl] = createSignal<string | null>(null);
 
   const redirectTo = () => {
     const r = searchParams.redirect;
@@ -111,8 +111,13 @@ export function LoginForm() {
 
   const form = createForm(() => ({
     defaultValues: { email: '', password: '' },
-    onSubmit: makeSubmitHandler({ navigate, redirectTo, setSubmitError }),
+    onSubmit: makeSubmitHandler({ redirectTo, setRedirectUrl, setSubmitError }),
   }));
 
-  return <LoginFormContent form={form} submitError={submitError} />;
+  return (
+    <>
+      <Show when={redirectUrl()}>{(url) => <Navigate href={url()} />}</Show>
+      <LoginFormContent form={form} submitError={submitError} />
+    </>
+  );
 }

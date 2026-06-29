@@ -1,6 +1,6 @@
+import { cmMerge } from '@classmatejs/solid';
 import type { AnyFieldApi } from '@tanstack/solid-form';
 import { Show } from 'solid-js';
-import { cn } from '../lib/cn';
 
 export function FormField(props: {
   field: AnyFieldApi;
@@ -23,7 +23,7 @@ export function FormField(props: {
         onBlur={props.field.handleBlur}
         onInput={(e) => props.field.handleChange(e.currentTarget.value)}
         required
-        class={cn('input w-full', hasError() && 'input-error')}
+        class={cmMerge('input w-full', hasError() && 'input-error')}
       />
       <Show when={hasError()}>
         <p class="fieldset-label text-error" role="alert">

@@ -1,6 +1,6 @@
-import { useNavigate, useSearchParams } from '@solidjs/router';
+import { Navigate, useSearchParams } from '@solidjs/router';
 import { createForm } from '@tanstack/solid-form';
-import { type Accessor, createSignal } from 'solid-js';
+import { type Accessor, createSignal, Show } from 'solid-js';
 import { signUp } from '../lib/auth-client';
 import { AuthCard } from './AuthCard';
 import { FormField } from './FormField';
@@ -16,9 +16,9 @@ type RegisterFieldCb = any;
 type RegisterSubCb = any;
 
 function makeSubmitHandler(params: {
-  setSubmitError: ReturnType<typeof createSignal<string>>[1];
-  navigate: ReturnType<typeof useNavigate>;
   redirectTo: () => string;
+  setRedirectUrl: ReturnType<typeof createSignal<string | null>>[1];
+  setSubmitError: ReturnType<typeof createSignal<string>>[1];
 }) {
   return async ({ value }: { value: { name: string; email: string; password: string } }) => {
     params.setSubmitError('');
@@ -28,7 +28,7 @@ function makeSubmitHandler(params: {
       params.setSubmitError(error.message ?? '注册失败');
       return;
     }
-    params.navigate(params.redirectTo());
+    params.setRedirectUrl(params.redirectTo());
   };
 }
 
@@ -114,8 +114,8 @@ function RegisterFormContent(props: RegisterFormProps) {
 }
 
 export function RegisterForm() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const [redirectUrl, setRedirectUrl] = createSignal<string | null>(null);
   const [submitError, setSubmitError] = createSignal('');
 
   const redirectTo = () => {
@@ -125,8 +125,13 @@ export function RegisterForm() {
 
   const form = createForm(() => ({
     defaultValues: { email: '', name: '', password: '' },
-    onSubmit: makeSubmitHandler({ navigate, redirectTo, setSubmitError }),
+    onSubmit: makeSubmitHandler({ redirectTo, setRedirectUrl, setSubmitError }),
   }));
 
-  return <RegisterFormContent form={form} submitError={submitError} />;
+  return (
+    <>
+      <Show when={redirectUrl()}>{(url) => <Navigate href={url()} />}</Show>
+      <RegisterFormContent form={form} submitError={submitError} />
+    </>
+  );
 }
