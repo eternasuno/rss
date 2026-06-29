@@ -20,7 +20,7 @@
   "scripts": {
     "build": "vite build",
     "db:push": "drizzle-kit push",
-    "dev": "vite dev --host",
+    "dev": "NODE_ENV=development vite dev --host",
     "start": "vite preview"
   },
   "type": "module"
