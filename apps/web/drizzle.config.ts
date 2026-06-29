@@ -1,10 +1,10 @@
-import type { Config } from 'drizzle-kit';
+import { defineConfig } from 'drizzle-kit';
 
-export default {
-  dbCredentials: {
-    url: process.env.DATABASE_URL ?? './data/db.sqlite',
-  },
-  dialect: 'sqlite',
+export default defineConfig({
   out: './drizzle',
-  schema: './db/schema',
-} satisfies Config;
+  schema: './src/db/schema',
+  dialect: 'turso',
+  dbCredentials: {
+    url: process.env.DB_FILE_NAME ?? './.data/sqlite.db',
+  },
+});

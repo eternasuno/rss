@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
     "allowJs": false,
-    "declaration": true,
-    "declarationMap": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "incremental": true,
@@ -14,11 +12,6 @@
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "plugins": [
-      {
-        "name": "@effect/language-service"
-      }
-    ],
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,

@@ -9,9 +9,13 @@
     },
     "enabled": true
   },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
   "files": {
-    "ignoreUnknown": true,
-    "includes": ["**/*.ts", "**/*.tsx", "**/*.mjs"]
+    "ignoreUnknown": true
   },
   "formatter": {
     "attributePosition": "auto",
@@ -26,6 +30,11 @@
     "lineWidth": 98,
     "useEditorconfig": true
   },
+  "html": {
+    "formatter": {
+      "selfCloseVoidElements": "always"
+    }
+  },
   "javascript": {
     "formatter": {
       "arrowParentheses": "always",
@@ -34,13 +43,11 @@
       "quoteStyle": "single",
       "semicolons": "always",
       "trailingCommas": "es5"
-    },
-    "jsxRuntime": "transparent"
+    }
   },
   "linter": {
     "domains": {
-      "next": "recommended",
-      "react": "recommended"
+      "solid": "recommended"
     },
     "enabled": true,
     "rules": {
@@ -54,7 +61,22 @@
         "noExcessiveLinesPerFunction": {
           "level": "error",
           "options": {
-            "maxLines": 55
+            "maxLines": 20
+          }
+        },
+        "useMaxParams": {
+          "level": "error",
+          "options": {
+            "max": 1
+          }
+        }
+      },
+      "preset": "recommended",
+      "style": {
+        "noExcessiveLinesPerFile": {
+          "level": "warn",
+          "options": {
+            "maxLines": 150
           }
         }
       },

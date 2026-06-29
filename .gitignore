@@ -32,10 +32,6 @@ node_modules/
 *.db-wal
 *.db-shm
 
-# Environment
-.env
-.env.local
-
 # TanStack generated
 .tanstack/
 routeTree.gen.ts
@@ -56,6 +52,10 @@ tsconfig.tsbuildinfo
 # Deepwork tracking
 .slim/deepwork/
 
-# Next.js
-.next/
-out/
+# SolidStart
+.vinxi/
+.output/
+app.config.timestamp_*.js
+
+# data
+.data

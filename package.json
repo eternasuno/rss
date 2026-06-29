@@ -1,20 +1,14 @@
 {
   "devDependencies": {
     "@biomejs/biome": "latest",
-    "@effect/language-service": "^0.86.2",
     "@types/node": "^24.0.0",
-    "turbo": "latest",
     "typescript": "latest"
+  },
+  "engines": {
+    "node": ">=24"
   },
   "name": "rss",
   "packageManager": "pnpm@11.9.0",
   "private": true,
-  "scripts": {
-    "build": "turbo build",
-    "check": "turbo check",
-    "dev": "turbo dev",
-    "prepare": "effect-language-service patch",
-    "test": "turbo test"
-  },
   "type": "module"
 }
