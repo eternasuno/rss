@@ -2,6 +2,7 @@
   "devDependencies": {
     "@biomejs/biome": "latest",
     "@types/node": "^24.0.0",
+    "turbo": "latest",
     "typescript": "latest"
   },
   "engines": {
@@ -10,5 +11,10 @@
   "name": "rss",
   "packageManager": "pnpm@11.9.0",
   "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check": "turbo check"
+  },
   "type": "module"
 }

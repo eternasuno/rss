@@ -19,6 +19,7 @@
   "name": "client",
   "scripts": {
     "build": "vite build",
+    "check": "tsc --noEmit",
     "dev": "vite --host",
     "preview": "vite preview"
   },
