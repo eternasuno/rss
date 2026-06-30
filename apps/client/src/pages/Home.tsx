@@ -3,7 +3,7 @@ import { AppLayout } from '../components/AppLayout';
 import { AuthGuard } from '../components/AuthGuard';
 import { signOut, useSession } from '../lib/auth-client';
 
-export default function Home() {
+export function Home() {
   const session = useSession();
 
   return (

@@ -1,8 +1,12 @@
 import { MetaProvider, Title } from '@solidjs/meta';
-import { Router } from '@solidjs/router';
-import { FileRoutes } from '@solidjs/start/router';
+import { Route, Router } from '@solidjs/router';
 import { QueryClient, QueryClientProvider } from '@tanstack/solid-query';
 import { ErrorBoundary, Suspense } from 'solid-js';
+import { Home } from './pages/Home';
+import { Login } from './pages/Login';
+import { NotFound } from './pages/NotFound';
+import { Register } from './pages/Register';
+
 import './app.css';
 
 const queryClient = new QueryClient({
@@ -30,7 +34,10 @@ export default function App() {
           </MetaProvider>
         )}
       >
-        <FileRoutes />
+        <Route path="/" component={Home} />
+        <Route path="/login" component={Login} />
+        <Route path="/register" component={Register} />
+        <Route path="*404" component={NotFound} />
       </Router>
     </QueryClientProvider>
   );

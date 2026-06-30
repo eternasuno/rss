@@ -52,16 +52,8 @@ tsconfig.tsbuildinfo
 # Deepwork tracking
 .slim/deepwork/
 
-# SolidStart
-.vinxi/
-.output/
-app.config.timestamp_*.js
-
 # data
 .data
-
-# nitro
-.nitro
 
 # core dumps
 core
