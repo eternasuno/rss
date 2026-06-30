@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { DateTime, Schema } from 'effect';
+import type { Context } from 'hono';
 import { Hono } from 'hono';
 
 import { db, schema } from '../db';
@@ -33,8 +34,8 @@ itemRoutes.get('/feeds/:feedId/items', async (c) => {
   return c.json(rows);
 });
 
-// POST /api/feeds/:feedId/items — create an item
-itemRoutes.post('/feeds/:feedId/items', async (c) => {
+// POST /api/feeds/:feedId/items — create an item (exported for dual-auth mounting)
+export async function createItemHandler(c: Context) {
   const userId = c.get('userId');
   const feedId = c.req.param('feedId');
   if (!feedId) {
@@ -75,7 +76,7 @@ itemRoutes.post('/feeds/:feedId/items', async (c) => {
     where: { id },
   });
   return c.json(row, 201);
-});
+}
 
 // PATCH /api/feeds/:feedId/items/:itemId — update an item
 itemRoutes.patch('/feeds/:feedId/items/:itemId', async (c) => {
