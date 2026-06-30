@@ -1,6 +1,10 @@
 {
   "devDependencies": {
     "@biomejs/biome": "latest",
+    "@rsbuild/core": "^2.1.1",
+    "@rsbuild/plugin-babel": "^2.0.0",
+    "@rsbuild/plugin-solid": "^1.2.2",
+    "@rsbuild/plugin-tailwindcss": "^2.0.3",
     "@types/node": "^24.0.0",
     "turbo": "latest",
     "typescript": "latest"
@@ -12,9 +16,10 @@
   "packageManager": "pnpm@11.9.0",
   "private": true,
   "scripts": {
-    "dev": "turbo dev",
     "build": "turbo build",
-    "check": "turbo check"
+    "build:deploy": "rsbuild build",
+    "check": "turbo check",
+    "dev": "turbo dev"
   },
   "type": "module"
 }
