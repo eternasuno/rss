@@ -1,5 +1,5 @@
 {
-  "$schema": "https://turbo.build/schema.json",
+  "$schema": "./node_modules/turbo/schema.json",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -11,7 +11,6 @@
     "dev": {
       "cache": false,
       "persistent": true
-    },
-    "db:push": {}
+    }
   }
 }
