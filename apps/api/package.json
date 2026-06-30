@@ -4,6 +4,8 @@
     "@tursodatabase/database": "^0.6.1",
     "better-auth": "^1.6.22",
     "drizzle-orm": "1.0.0-rc.4",
+    "effect": "^3.21.4",
+    "feedsmith": "^2.9.4",
     "hono": "^4.8.5",
     "tsx": "^4.19.0"
   },

@@ -2,6 +2,7 @@ import { MetaProvider, Title } from '@solidjs/meta';
 import { Route, Router } from '@solidjs/router';
 import { QueryClient, QueryClientProvider } from '@tanstack/solid-query';
 import { ErrorBoundary, Suspense } from 'solid-js';
+import { FeedDetail } from './pages/FeedDetail';
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { NotFound } from './pages/NotFound';
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="/" component={Home} />
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
+        <Route path="/feeds/:id" component={FeedDetail} />
         <Route path="*404" component={NotFound} />
       </Router>
     </QueryClientProvider>

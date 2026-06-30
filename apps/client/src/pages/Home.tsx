@@ -1,26 +1,46 @@
 import { Title } from '@solidjs/meta';
+import { createQuery } from '@tanstack/solid-query';
+import { For, Show } from 'solid-js';
 import { AppLayout } from '../components/AppLayout';
 import { AuthGuard } from '../components/AuthGuard';
-import { signOut, useSession } from '../lib/auth-client';
+import { CreateFeedForm } from '../components/CreateFeedForm';
+import { type Feed, FeedCard } from '../components/FeedCard';
 
 export function Home() {
-  const session = useSession();
+  const feedsQuery = createQuery(() => ({
+    queryFn: async () => {
+      const res = await fetch('/api/feeds');
+      if (!res.ok) throw new Error('Failed to fetch feeds');
+      return res.json() as Promise<Feed[]>;
+    },
+    queryKey: ['feeds'],
+    staleTime: 30_000,
+    suspense: false,
+  }));
 
   return (
     <AuthGuard>
       <AppLayout>
-        <Title>RSS Reader - 首页</Title>
-        <div class="card bg-base-100 shadow-sm">
-          <div class="card-body">
-            <h1 class="card-title text-2xl">欢迎回来，{session()?.data?.user?.name ?? '用户'}</h1>
-            <p class="text-base-content/70">{session()?.data?.user?.email ?? ''}</p>
-            <div class="card-actions mt-4">
-              <button onClick={() => signOut()} type="button" class="btn btn-outline btn-sm">
-                退出登录
-              </button>
-            </div>
-          </div>
+        <Title>RSS Reader - 管理 Feeds</Title>
+
+        <div class="mb-6">
+          <h1 class="text-2xl font-bold">管理 Feeds</h1>
         </div>
+
+        <CreateFeedForm />
+
+        <Show when={feedsQuery.data} fallback={<div class="text-center py-8">加载中...</div>}>
+          {(feeds) => (
+            <Show
+              when={feeds().length > 0}
+              fallback={
+                <p class="text-base-content/50 text-center py-8">暂无 Feed，创建一个吧</p>
+              }
+            >
+              <For each={feeds()}>{(feed) => <FeedCard feed={feed} />}</For>
+            </Show>
+          )}
+        </Show>
       </AppLayout>
     </AuthGuard>
   );

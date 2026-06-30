@@ -28,6 +28,9 @@ export function AppLayout(props: { children: JSX.Element }) {
             }
           >
             <div class="flex items-center gap-3">
+              <A href="/" class="btn btn-ghost btn-sm">
+                管理 Feeds
+              </A>
               <span class="text-sm text-base-content/70">
                 {session()?.data?.user?.name ?? '用户'}
               </span>
