@@ -1,8 +1,13 @@
 packages:
   - "apps/*"
+  - "packages/*"
 
 catalog:
-  effect: "^3.21.4"
+  "@effect/vitest": ^0.29.0
+  better-auth: "^1.6.22"
+  drizzle-orm: ^0.45.0
+  effect: ^3.21.4
+  vitest: ^3.2.0
 
 allowBuilds:
   better-sqlite3: true

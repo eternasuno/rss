@@ -23,18 +23,11 @@ node_modules/
 .env
 .env.local
 
-# RSS
-*.xml
-
 # Database
 *.db
 *.db-journal
 *.db-wal
 *.db-shm
-
-# TanStack generated
-.tanstack/
-routeTree.gen.ts
 
 # MacOS
 .DS_Store
@@ -54,7 +47,3 @@ tsconfig.tsbuildinfo
 
 # data
 .data
-
-# core dumps
-core
-core.*
