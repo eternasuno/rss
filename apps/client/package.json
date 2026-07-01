@@ -10,19 +10,10 @@
     "solid-js": "^1.9.5",
     "tailwindcss": "^4.3.1"
   },
-  "devDependencies": {
-    "@rsbuild/core": "^2.1.1",
-    "@rsbuild/plugin-babel": "^2.0.0",
-    "@rsbuild/plugin-solid": "^1.2.2",
-    "@rsbuild/plugin-tailwindcss": "^2.0.3",
-    "typescript": "latest"
-  },
   "name": "client",
   "scripts": {
-    "build": "rsbuild build",
-    "check": "tsc --noEmit",
-    "dev": "rsbuild dev",
-    "preview": "rsbuild preview"
+    "check": "tsc --noEmit && biome check --write",
+    "dev": "rsbuild dev"
   },
   "type": "module"
 }

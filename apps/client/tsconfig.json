@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
     "jsx": "preserve",
-    "jsxImportSource": "solid-js",
-    "types": ["@rsbuild/core/client"]
+    "jsxImportSource": "solid-js"
   },
   "extends": "../../tsconfig.json"
 }

@@ -1,7 +1,9 @@
 packages:
   - "apps/*"
 
+catalog:
+  effect: "^3.21.4"
+
 allowBuilds:
-  '@parcel/watcher': true
   better-sqlite3: true
   esbuild: true

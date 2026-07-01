@@ -12,12 +12,11 @@
   "engines": {
     "node": ">=24"
   },
-  "name": "rss",
+  "name": "rss-factory",
   "packageManager": "pnpm@11.9.0",
   "private": true,
   "scripts": {
-    "build": "turbo build",
-    "build:deploy": "rsbuild build",
+    "build": "rsbuild build",
     "check": "turbo check",
     "dev": "turbo dev"
   },

@@ -11,22 +11,18 @@
     };
   };
 
-  programs.nix-ld.enable = true;
-  programs.nix-ld.libraries = with pkgs; [
-    stdenv.cc.cc.lib
-    glibc
-    zlib
-    openssl
-  ];
-
-  containers."prod" = {
-    fromImage = null;
-    copyToRoot = [ ./dist ];
-    startupCommand = "${pkgs.nodejs_24}/bin/node /index.js";
-    env = {
-      NODE_ENV = "production";
-      PORT = "3000";
-      API_PORT = "3000";
+  scripts = {
+    build-container = {
+      packages = with pkgs;[nodejs-slim pnpm]; 
+      exec = ''
+        pnpm build
+        devenv container build rss-factory
+      '';
     };
+  };
+
+  containers."rss-factory" = {
+    copyToRoot = [ ./dist ];
+    startupCommand = "${pkgs.nodejs-slim}/bin/node /index.js";
   };
 }

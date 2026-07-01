@@ -1,32 +1,30 @@
-import { defineConfig, mergeRsbuildConfig } from '@rsbuild/core';
 import path from 'node:path';
-import { frontendBaseConfig } from './apps/client/rsbuild.config';
+import { defineConfig, mergeRsbuildConfig } from '@rsbuild/core';
+import  clientConfig  from './apps/client/rsbuild.config';
 
 export default defineConfig({
   environments: {
-    frontend: mergeRsbuildConfig(frontendBaseConfig, {
+    api: {
       output: {
-        target: 'web',
         distPath: {
-          root: path.resolve(import.meta.dirname, './dist/public'),
+          root: path.resolve(import.meta.dirname, './dist'),
         },
+        target: 'node',
       },
-      server: {},
-    }),
-
-    backend: {
       source: {
         entry: {
           index: path.resolve(import.meta.dirname, './apps/api/src/index.ts'),
         },
       },
-      output: {
-        target: 'node',
-        distPath: {
-          root: path.resolve(import.meta.dirname, './dist'),
-        },
-        inlineAllScripts: true,
-      },
     },
+    client: mergeRsbuildConfig(clientConfig, {
+      output: {
+        distPath: {
+          root: path.resolve(import.meta.dirname, './dist/public'),
+        },
+        target: 'web',
+      },
+      server: {},
+    }),
   },
 });
