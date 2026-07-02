@@ -1,0 +1,25 @@
+{
+  "dependencies": {
+    "acebase": "^1.29.13"
+  },
+  "description": "Better Auth database adapter for AceBase",
+  "devDependencies": {
+    "@better-auth/test-utils": "^1.6.23",
+    "vitest": "^4.1.9"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "license": "MIT",
+  "main": "./src/index.ts",
+  "name": "better-auth-acebase",
+  "peerDependencies": {
+    "better-auth": "^1.6.0"
+  },
+  "scripts": {
+    "check": "tsc --noEmit && biome check --write",
+    "test": "vitest run"
+  },
+  "type": "module",
+  "version": "0.1.0"
+}
